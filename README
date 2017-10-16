@@ -1,0 +1,13 @@
+# Public api deployed on AWS
+
+
+## Rss wrapers
+- GET https://api.lnmpy.com/rss/xitu
+- GET https://api.lnmpy.com/rss/xitu/android
+
+## Oauth Proxy
+- POST https://api.lnmpy.com/auth-proxy/google
+
+## Toby backend api
+- POST https://api.lnmpy.com/toby/users/login
+- GET https://api.lnmpy.com/toby/states
