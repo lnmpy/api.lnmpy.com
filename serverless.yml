@@ -1,0 +1,43 @@
+service: api
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  stage: prod
+  region: ap-northeast-2
+  timeout: 300
+
+plugins:
+  - serverless-offline
+
+functions:
+  rss:
+    handler: apis.rss_xitu
+    memorySize: 256
+    events:
+      - http: GET rss/xitu
+      - http: GET rss/xitu/{category}
+  auth-proxy:
+    handler: apis.auth_proxy
+    events:
+      - http: POST auth-proxy/{service}
+  toby-proxy:
+    handler: apis.toby_proxy
+    memorySize: 256
+    events:
+      - http:
+          method: GET
+          path: toby/{a}
+          cors: true
+      - http:
+          method: GET
+          path: toby/{a}/{b}
+          cors: true
+      - http:
+          method: POST
+          path: toby/{a}
+          cors: true
+      - http:
+          method: POST
+          path: toby/{a}/{b}
+          cors: true

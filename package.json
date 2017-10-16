@@ -1,0 +1,25 @@
+{
+  "name": "api.lnmpy.com",
+  "version": "1.0.0",
+  "author": "elvis@lnmpy.com",
+  "description": "",
+  "dependencies": {
+    "aws-sdk": "2.92.0",
+    "cryptr": "^2.0.0",
+    "google-auth-library": "^0.10.0",
+    "papaparse": "4.3.5",
+    "serverless": "1.18.1",
+    "superagent": "3.5.2",
+    "xml2js": "0.4.17"
+  },
+  "devDependencies": {
+    "eslint": "3.19.0",
+    "eslint-config-airbnb": "14.1.0",
+    "eslint-plugin-import": "2.2.0",
+    "eslint-plugin-jsx-a11y": "4.0.0",
+    "eslint-plugin-react": "6.10.3",
+    "serverless-offline": "3.15.3"
+  },
+  "scripts": {},
+  "license": "MIT"
+}

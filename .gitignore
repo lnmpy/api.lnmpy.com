@@ -1,0 +1,7 @@
+node_modules
+.serverless/*.zip
+.serverless/cloudformation-template-update-stack.json
+.serverless/serverless-state.json
+*.swp
+.DS_Store
+

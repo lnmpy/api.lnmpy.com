@@ -1,0 +1,15 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/repo
+    machine: true
+    branches:
+      only:
+        - master
+    steps:
+      - checkout
+      - run: npm i yarn@latest
+      - run: make install
+      - run: make transcrypt
+      - run: make eslint
+      - run: make deploy
