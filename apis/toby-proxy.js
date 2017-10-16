@@ -3,7 +3,7 @@ const request = require('superagent');
 const TOBY_API_PREFIX = 'https://api.gettoby.com/v2';
 
 module.exports = (event, context, callback) => {
-  const req = request(event.httpMethod, TOBY_API_PREFIX + event.path.replace(/^.*toby/, ''))
+  const req = request(event.httpMethod, TOBY_API_PREFIX + event.path.replace(/^.*?toby/, ''))
     .set('Content-Type', 'application/json')
     .set('x-auth-token', event.headers.Authorization || '');
   if (event.body) {
