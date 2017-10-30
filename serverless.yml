@@ -13,26 +13,14 @@ plugins:
 functions:
   rss:
     handler: apis.rss_xitu
-    memorySize: 256
+    memorySize: 128
     events:
       - http: GET rss/xitu
       - http: GET rss/xitu/{category}
   auth-proxy:
     handler: apis.gfw_proxy
-    memorySize: 256
+    memorySize: 128
     events:
       - http: POST auth-proxy/{service}
       - http: POST proxy/{service}/{provider}
       - http: GET proxy/{service}/{provider}
-  toby-proxy:
-    handler: apis.toby_proxy
-    memorySize: 256
-    events:
-      - http:
-          method: GET
-          path: toby/{proxy+}
-          cors: true
-      - http:
-          method: POST
-          path: toby/{proxy+}
-          cors: true
