@@ -18,9 +18,11 @@ functions:
       - http: GET rss/xitu
       - http: GET rss/xitu/{category}
   auth-proxy:
-    handler: apis.auth_proxy
+    handler: apis.gfw_proxy
     events:
       - http: POST auth-proxy/{service}
+      - http: POST proxy/{service}/{provider}
+      - http: GET proxy/{service}/{provider}
   toby-proxy:
     handler: apis.toby_proxy
     memorySize: 256

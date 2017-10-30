@@ -1,6 +1,7 @@
+const request = require('superagent');
 const GoogleAuth = require('google-auth-library');
 
-function google(event, context, callback) {
+function authGoogle(event, context, callback) {
   const auth = new GoogleAuth();
   const client = new auth.OAuth2(event.body.client_id,
                                  event.body.client_secret,
@@ -20,6 +21,21 @@ function google(event, context, callback) {
     });
 }
 
+function calendarGoogle(event, context, callback) {
+  const ics = event.queryStringParameters.ics;
+  request.get(`https://calendar.google.com/calendar/ical/${ics}`)
+    .set('Accept-Encoding', 'identity')
+    .then((resp) => {
+      callback(null, {
+        statusCode: resp.status,
+        headers: Object.assign({
+          'Access-Control-Allow-Origin': '*',
+        }, resp.headers),
+        body: resp.text,
+      });
+    });
+}
+
 
 function serviceNotFound(event, context, callback) {
   callback(null, {
@@ -35,11 +51,15 @@ function serviceNotFound(event, context, callback) {
 }
 
 const SERVICE_MAPPING = {
-  google,
+  google: authGoogle,
+  'auth-google': authGoogle,
+  'calendar-google': calendarGoogle,
 };
 
 module.exports = (event, context, callback) => {
-  const serviceFunction = SERVICE_MAPPING[event.pathParameters.service] || serviceNotFound;
+  const serviceFunction = SERVICE_MAPPING[event.pathParameters.service]
+    || SERVICE_MAPPING[`${event.pathParameters.service}-${event.pathParameters.provider}`]
+    || serviceNotFound;
   event.body = JSON.parse(event.body);
   return serviceFunction(event, context, callback);
 };
