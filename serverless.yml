@@ -24,3 +24,15 @@ functions:
       - http: POST auth-proxy/{service}
       - http: POST proxy/{service}/{provider}
       - http: GET proxy/{service}/{provider}
+  toby-proxy:
+    handler: apis.toby_proxy
+    memorySize: 128
+    events:
+      - http:
+          method: GET
+          path: toby/{proxy+}
+          cors: true
+      - http:
+          method: POST
+          path: toby/{proxy+}
+          cors: true
