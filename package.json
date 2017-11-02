@@ -10,6 +10,7 @@
     "papaparse": "4.3.5",
     "serverless": "1.18.1",
     "superagent": "3.5.2",
+    "superagent-charset": "^1.2.0",
     "xml2js": "0.4.17"
   },
   "devDependencies": {

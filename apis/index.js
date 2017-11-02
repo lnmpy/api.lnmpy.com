@@ -1,3 +1,3 @@
-exports.rss_xitu = require('./rss-xitu');
+exports.rss = require('./rss');
 exports.gfw_proxy = require('./gfw-proxy');
 exports.toby_proxy = require('./toby-proxy');

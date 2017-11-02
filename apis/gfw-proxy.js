@@ -53,14 +53,12 @@ function serviceNotFound(event, context, callback) {
 }
 
 const SERVICE_MAPPING = {
-  google: authGoogle,
   'auth-google': authGoogle,
   'calendar-google': calendarGoogle,
 };
 
 module.exports = (event, context, callback) => {
-  const serviceFunction = SERVICE_MAPPING[event.pathParameters.service]
-    || SERVICE_MAPPING[`${event.pathParameters.service}-${event.pathParameters.provider}`]
+  const serviceFunction = SERVICE_MAPPING[`${event.pathParameters.service}-${event.pathParameters.provider}`]
     || serviceNotFound;
   event.body = JSON.parse(event.body);
   return serviceFunction(event, context, callback);

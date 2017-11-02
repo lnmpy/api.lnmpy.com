@@ -12,10 +12,9 @@ plugins:
 
 functions:
   rss:
-    handler: apis.rss_xitu
+    handler: apis.rss
     events:
-      - http: GET rss/xitu
-      - http: GET rss/xitu/{category}
+      - http: GET rss/{provider}/{args+}
   auth-proxy:
     handler: apis.gfw_proxy
     events:
