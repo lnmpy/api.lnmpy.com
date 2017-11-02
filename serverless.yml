@@ -16,6 +16,13 @@ functions:
     events:
       - http: GET rss/xitu
       - http: GET rss/xitu/{category}
+  auth-proxy:
+    handler: apis.gfw_proxy
+    events:
+      - http: 
+          method: ANY
+          path: proxy/{service}/{provider}/{args+}
+          cors: true
   toby-proxy:
     handler: apis.toby_proxy
     events:
