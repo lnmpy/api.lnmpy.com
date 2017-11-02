@@ -2,6 +2,7 @@ const request = require('superagent');
 const GoogleAuth = require('google-auth-library');
 
 function authGoogle(event, context, callback) {
+  // expect POST /auth/google
   const auth = new GoogleAuth();
   const client = new auth.OAuth2(event.body.client_id,
                                  event.body.client_secret,
@@ -22,7 +23,8 @@ function authGoogle(event, context, callback) {
 }
 
 function calendarGoogle(event, context, callback) {
-  const ics = event.queryStringParameters.ics;
+  // expect GET /calendar/google/<your ics>
+  const ics = decodeURIComponent(event.pathParameters.args);
   request.get(`https://calendar.google.com/calendar/ical/${ics}`)
     .set('Accept-Encoding', 'identity')
     .then((resp) => {
