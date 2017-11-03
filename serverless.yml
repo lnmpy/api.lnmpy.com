@@ -18,7 +18,11 @@ functions:
   auth-proxy:
     handler: apis.gfw_proxy
     events:
-      - http: 
+      - http:
+          method: ANY
+          path: proxy/{service}/{provider}
+          cors: true
+      - http:
           method: ANY
           path: proxy/{service}/{provider}/{args+}
           cors: true
