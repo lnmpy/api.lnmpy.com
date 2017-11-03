@@ -14,6 +14,7 @@ functions:
   rss:
     handler: apis.rss
     events:
+      - http: GET rss/{provider}
       - http: GET rss/{provider}/{args+}
   auth-proxy:
     handler: apis.gfw_proxy
@@ -30,10 +31,6 @@ functions:
     handler: apis.toby_proxy
     events:
       - http:
-          method: GET
-          path: toby/{proxy+}
-          cors: true
-      - http:
-          method: POST
+          method: ANY
           path: toby/{proxy+}
           cors: true
