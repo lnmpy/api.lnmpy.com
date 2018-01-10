@@ -16,7 +16,7 @@ serve:
 remove:
 	@sls remove
 
-eslint:
+lint:
 	@eslint .
 
 logs:

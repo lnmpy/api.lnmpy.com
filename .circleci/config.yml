@@ -11,5 +11,5 @@ jobs:
       - run: npm i yarn@latest
       - run: make install
       - run: make transcrypt
-      - run: make eslint
+      - run: make lint
       - run: make deploy
