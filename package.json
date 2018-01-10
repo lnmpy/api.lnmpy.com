@@ -5,9 +5,7 @@
   "description": "",
   "dependencies": {
     "aws-sdk": "2.92.0",
-    "cryptr": "^2.0.0",
     "google-auth-library": "^0.10.0",
-    "papaparse": "4.3.5",
     "serverless": "1.18.1",
     "superagent": "3.5.2",
     "superagent-charset": "^1.2.0",
