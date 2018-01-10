@@ -8,7 +8,7 @@ jobs:
         - master
     steps:
       - checkout
-      - run: npm i yarn@latest
+      - run: npm i yarn@latest --no-save
       - run: make install
       - run: make transcrypt
       - run: make lint
