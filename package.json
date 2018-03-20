@@ -4,11 +4,12 @@
   "author": "elvis@lnmpy.com",
   "description": "",
   "dependencies": {
-    "aws-sdk": "2.92.0",
-    "google-auth-library": "^0.10.0",
+    "dynasty": "0.3.9",
+    "google-auth-library": "0.10.0",
     "serverless": "1.18.1",
     "superagent": "3.5.2",
-    "superagent-charset": "^1.2.0",
+    "superagent-charset": "1.2.0",
+    "twilio": "3.13.1",
     "xml2js": "0.4.17"
   },
   "devDependencies": {

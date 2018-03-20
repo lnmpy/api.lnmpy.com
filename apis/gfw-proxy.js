@@ -1,4 +1,5 @@
 const request = require('superagent');
+const Utils = require('../utils');
 const GoogleAuth = require('google-auth-library');
 
 function authGoogle(event, context, callback) {
@@ -38,28 +39,13 @@ function calendarGoogle(event, context, callback) {
     });
 }
 
-
-function serviceNotFound(event, context, callback) {
-  callback(null, {
-    statusCode: 404,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Content-Type': 'application/json; charset=utf-8',
-    },
-    body: JSON.stringify({
-      msg: `Resouce ${event.path} not exist`,
-    }),
-  });
-}
-
 const SERVICE_MAPPING = {
   'auth-google': authGoogle,
   'calendar-google': calendarGoogle,
 };
 
 module.exports = (event, context, callback) => {
-  const serviceFunction = SERVICE_MAPPING[`${event.pathParameters.service}-${event.pathParameters.provider}`]
-    || serviceNotFound;
-  event.body = JSON.parse(event.body);
-  return serviceFunction(event, context, callback);
+  Utils.SafeParseJson(event, 'body');
+  const service = SERVICE_MAPPING[`${event.pathParameters.service}-${event.pathParameters.provider}`] || Utils.ServiceNotFound;
+  return service(event, context, callback);
 };
