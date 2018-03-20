@@ -2,12 +2,13 @@
 
 
 ## Rss wrapers
-- GET https://api.lnmpy.com/public/rss/xitu
-- GET https://api.lnmpy.com/public/rss/xitu/android
+- GET https://api.lnmpy.com/rss/xitu
+- GET https://api.lnmpy.com/rss/xitu/android
 
-## Oauth Proxy
-- POST https://api.lnmpy.com/public/auth-proxy/google
+## GFW Proxy
+- POST https://api.lnmpy.com/proxy/auth/google
+- POST https://api.lnmpy.com/proxy/calendart/google/<your secret url>
 
 ## Toby backend api
-- POST https://api.lnmpy.com/public/toby/users/login
-- GET https://api.lnmpy.com/public/toby/states
+- POST https://api.lnmpy.com/toby/users/login
+- GET https://api.lnmpy.com/toby/states
