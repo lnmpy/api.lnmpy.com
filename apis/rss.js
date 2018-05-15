@@ -8,7 +8,7 @@ const builder = new xml2js.Builder({
 
 function xitu(event, context, callback) {
   const category = event.pathParameters.args || '';
-  request.get('http://gold.xitu.io/rss')
+  request.get('https://juejin.im/rss')
     .then(response => response.text)
     .then((data) => {
       parseString(data, (err, content) => {
