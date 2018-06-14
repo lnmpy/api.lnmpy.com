@@ -4,7 +4,6 @@
   "author": "elvis@lnmpy.com",
   "description": "",
   "dependencies": {
-    "dynasty": "0.3.9",
     "google-auth-library": "0.10.0",
     "serverless": "1.18.1",
     "superagent": "3.5.2",

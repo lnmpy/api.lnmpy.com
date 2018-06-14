@@ -6,15 +6,6 @@ provider:
   stage: prod
   region: ap-northeast-2
   timeout: 300
-  iamRoleStatements:
-    - Effect: Allow
-      Resource: "arn:aws:sns:ap-northeast-2:*:api"
-      Action:
-        - sns:*
-    - Effect: Allow
-      Resource: "arn:aws:dynamodb:ap-northeast-2:*:table/*"
-      Action:
-        - dynamodb:*
 
 plugins:
   - serverless-offline
@@ -56,25 +47,3 @@ functions:
     events:
       - http: ANY notify/{service}
       - http: ANY notify/{service}/{to}
-  wechat:
-    handler: apis.wechat
-    events:
-      - http: POST wechat/auth
-      - http: GET wechat/user/{openid}
-      - http: POST wechat/user/{openid}
-
-resources:
-  Resources:
-    UsersTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: UserTable
-        AttributeDefinitions:
-          - AttributeName: openid
-            AttributeType: S
-        KeySchema:
-          - AttributeName: openid
-            KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
