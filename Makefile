@@ -21,9 +21,3 @@ lint:
 
 logs:
 	@sls logs -f api
-
-# only in circle ci
-transcrypt:
-	wget https://raw.githubusercontent.com/elasticdog/transcrypt/master/transcrypt -O node_modules/.bin/transcrypt
-	chmod +x node_modules/.bin/transcrypt
-	transcrypt -c aes-256-cbc -y -p $(TRANSCRYPT_KEY)
