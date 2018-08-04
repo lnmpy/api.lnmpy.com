@@ -10,7 +10,7 @@ install:
   - make install
 
 before_script:
-  - wget https://raw.githubusercontent.com/elasticdog/transcrypt/master/transcrypt ; bash ./transcrypt -c aes-256-cbc -y -p $(TRANSCRYPT_KEY)
+  - wget https://raw.githubusercontent.com/elasticdog/transcrypt/master/transcrypt ; bash ./transcrypt -c aes-256-cbc -y -p ${TRANSCRYPT_KEY}
   - make lint
 
 script:
