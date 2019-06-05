@@ -5,7 +5,7 @@
   "description": "",
   "dependencies": {
     "google-auth-library": "0.10.0",
-    "serverless": "1.18.1",
+    "serverless": "1.44.1",
     "superagent": "3.8.3",
     "superagent-charset": "1.2.0",
     "twilio": "3.13.1",
