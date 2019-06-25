@@ -5,7 +5,7 @@ const SECRET = require('../.secret').circle_ci;
 const CIRCLE_TOKEN = SECRET.token;
 
 function ciZoe(event, context, callback) {
-  request.post('https://circleci.com/api/v1.1/project/github/elvis-macak/web-test/tree/master')
+  request.post('https://circleci.com/api/v1.1/project/github/elvismacak/web-test/tree/master')
     .type('json')
     .accept('json')
     .query({ 'circle-token': CIRCLE_TOKEN })
