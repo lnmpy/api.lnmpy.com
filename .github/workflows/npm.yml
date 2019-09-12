@@ -1,0 +1,26 @@
+name: Npm
+
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 8.9.4
+      - run: npm i yarn@latest --no-save
+      - run: make install
+      - run: wget https://raw.githubusercontent.com/elasticdog/transcrypt/master/transcrypt 
+      - run: bash ./transcrypt -c aes-256-cbc -y -p ${{secrets.TRANSCRYPT_KEY}}
+      - run: make lint
+      - run: make deploy
+        env:
+          AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+          AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+        
