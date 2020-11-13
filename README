@@ -12,3 +12,8 @@
 ## Toby backend api
 - POST https://api.lnmpy.com/toby/users/login
 - GET https://api.lnmpy.com/toby/states
+
+## Shorten Url
+- POST https://api.lnmpy.com/url
+- GET https://api.lnmpy.com/url/{id}
+- DELETE https://api.lnmpy.com/url/{id}

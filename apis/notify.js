@@ -1,16 +1,15 @@
 const request = require('superagent');
 const Utils = require('../utils');
-
 const SECRET = require('../.secret').notify;
-const client = require('twilio')(SECRET.twilio.sid, SECRET.twilio.auth_token);
 
 function notifySlack(event, context, callback) {
-  const attachment = Object.assign({
+  const attachment = {
+    ...event.body,
     author_name: 'Lambda-JS',
     title: 'A simple Notification',
     text: 'FYI',
     color: '#36a64f',
-  }, event.body);
+  };
   request.post(SECRET.slack.notify_url)
     .type('json')
     .accept('json')
@@ -26,25 +25,8 @@ function notifySlack(event, context, callback) {
   });
 }
 
-function notifyTwilio(event, context, callback) {
-  client.calls.create({
-    url: 'http://demo.twilio.com/docs/voice.xml',
-    to: `+86${event.pathParameters.to}`,
-    from: '+13134258245',
-  }, err => (
-    callback(null, {
-      statusCode: err ? 400 : 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json; charset=utf-8',
-      },
-      body: JSON.stringify(err || { status: 'success' }),
-    })));
-}
-
 const SERVICE_MAPPING = {
   slack: notifySlack,
-  call: notifyTwilio,
 };
 
 module.exports = (event, context, callback) => {

@@ -13,9 +13,9 @@ jobs:
       - uses: actions/checkout@v1
       - uses: actions/setup-node@v1
         with:
-          node-version: 8.9.4
+          node-version: 12
       - run: npm i yarn@latest --no-save
-      - run: make install
+      - run: yarn install --no-save
       - run: wget https://raw.githubusercontent.com/elasticdog/transcrypt/master/transcrypt 
       - run: bash ./transcrypt -c aes-256-cbc -y -p ${{secrets.TRANSCRYPT_KEY}}
       - run: make lint

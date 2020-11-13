@@ -5,7 +5,7 @@ SHELL = /bin/bash
 all: serve
 
 install:
-	yarn install
+	yarn install --no-save
 
 deploy:
 	@sls deploy -v

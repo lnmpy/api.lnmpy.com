@@ -1,13 +1,12 @@
 const request = require('superagent');
-const Utils = require('../utils');
 const GoogleAuth = require('google-auth-library');
+const Utils = require('../utils');
 
 function authGoogle(event, context, callback) {
   // expect POST /auth/google
   const auth = new GoogleAuth();
-  const client = new auth.OAuth2(event.body.client_id,
-                                 event.body.client_secret,
-                                 event.body.redirect_uri);
+  const client = new auth.OAuth2(event.body.client_id, event.body.client_secret, event.body.redirect_uri);
+
   client.verifyIdToken(
     event.body.id_token,
     event.body.client_id,
@@ -20,7 +19,8 @@ function authGoogle(event, context, callback) {
         },
         body: JSON.stringify(login.getPayload()),
       });
-    });
+    },
+  );
 }
 
 function calendarGoogle(event, context, callback) {
@@ -31,9 +31,10 @@ function calendarGoogle(event, context, callback) {
     .then((resp) => {
       callback(null, {
         statusCode: resp.status,
-        headers: Object.assign({
+        headers: {
+          ...resp.headers,
           'Access-Control-Allow-Origin': '*',
-        }, resp.headers),
+        },
         body: resp.text,
       });
     });

@@ -4,20 +4,19 @@
   "author": "elvis@lnmpy.com",
   "description": "",
   "dependencies": {
-    "google-auth-library": "0.10.0",
-    "serverless": "1.44.1",
-    "superagent": "3.8.3",
+    "google-auth-library": "6.1.3",
+    "superagent": "6.1.0",
     "superagent-charset": "1.2.0",
-    "twilio": "3.13.1",
-    "xml2js": "0.4.17"
+    "xml2js": "0.4.23"
   },
   "devDependencies": {
-    "eslint": "3.19.0",
-    "eslint-config-airbnb": "14.1.0",
-    "eslint-plugin-import": "2.2.0",
-    "eslint-plugin-jsx-a11y": "4.0.0",
-    "eslint-plugin-react": "6.10.3",
-    "serverless-offline": "3.15.3"
+    "eslint": "7.13.0",
+    "eslint-config-airbnb": "18.2.1",
+    "eslint-plugin-import": "2.22.1",
+    "eslint-plugin-jsx-a11y": "6.4.1",
+    "eslint-plugin-react": "7.21.5",
+    "serverless": "2.11.1",
+    "serverless-offline": "6.8.0"
   },
   "scripts": {},
   "license": "MIT"
