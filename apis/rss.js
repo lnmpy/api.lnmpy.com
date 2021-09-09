@@ -29,18 +29,18 @@ function xitu(event, context, callback) {
     });
 }
 
-function newsmth(event, context, callback) {
+function mysmth(event, context, callback) {
   const board = event.pathParameters.args;
-  request.get(`http://www.newsmth.net/nForum/rss/${board}`)
+  request.get(`https://www.mysmth.net/nForum/rss/${board}`)
     .charset('GBK')
     .then((response) => response.text)
     .then((data) => {
       parseString(data, (err, content) => {
         content.rss.channel[0].item = content.rss.channel[0].item
           .map((ele) => {
-            ele.link = ele.link.map((u) => u.replace('www.newsmth.net/nForum', 'm.newsmth.net'));
-            ele.guid = ele.guid.map((u) => u.replace('www.newsmth.net/nForum', 'm.newsmth.net'));
-            ele.comments = ele.comments.map((u) => u.replace('www.newsmth.net/nForum', 'm.newsmth.net'));
+            ele.link = ele.link.map((u) => u.replace(/www..{2,3}smth.net\/nForum/, 'm.mysmth.net'));
+            ele.guid = ele.guid.map((u) => u.replace(/www..{2,3}smth.net\/nForum/, 'm.mysmth.net'));
+            ele.comments = ele.comments.map((u) => u.replace(/www..{2,3}smth.net\/nForum/, 'm.mysmth.net'));
             return ele;
           });
         callback(null, {
@@ -57,7 +57,7 @@ function newsmth(event, context, callback) {
 
 const SERVICE_MAPPING = {
   xitu,
-  newsmth,
+  mysmth,
 };
 
 module.exports = (event, context, callback) => {
