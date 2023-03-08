@@ -2,7 +2,7 @@ service: api
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs18.x
   stage: prod
   region: ap-northeast-2
   timeout: 300

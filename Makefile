@@ -1,23 +1,19 @@
-export PATH := node_modules/.bin/:$(PATH)
-
-SHELL = /bin/bash
-
 all: serve
 
 install:
 	yarn install --no-save
 
 deploy:
-	@sls deploy -v
+	@node_modules/.bin/sls deploy -v
 
 serve:
-	@sls offline start
+	@node_modules/.bin/sls offline start
 
 remove:
-	@sls remove
+	@node_modules/.bin/sls remove
 
 lint:
-	@eslint .
+	@node_modules/.bin/eslint .
 
 logs:
-	@sls logs -f api
+	@node_modules/.bin/sls logs -f api
