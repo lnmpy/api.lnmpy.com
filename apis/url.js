@@ -1,6 +1,6 @@
 const AWS = require('aws-sdk'); // eslint-disable-line import/no-extraneous-dependencies
 const Utils = require('../utils');
-const SECRET = require('../.secret').notify;
+const SECRET = require('../.secret').notify; // eslint-disable-line import/extensions
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 

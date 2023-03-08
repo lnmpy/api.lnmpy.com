@@ -1,6 +1,6 @@
 const request = require('superagent');
 const Utils = require('../utils');
-const SECRET = require('../.secret').notify;
+const SECRET = require('../.secret').notify; // eslint-disable-line import/extensions
 
 function notifySlack(event, context, callback) {
   const attachment = {
