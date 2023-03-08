@@ -15,12 +15,13 @@ jobs:
         with:
           node-version: 18
       - run: npm i yarn@latest --no-save
-      - run: yarn install --no-save
-      - run: wget https://raw.githubusercontent.com/elasticdog/transcrypt/master/transcrypt 
+      - run: make install
+      - run: git checkout .
+      - run: wget https://raw.githubusercontent.com/elasticdog/transcrypt/master/transcrypt
       - run: bash ./transcrypt -c aes-256-cbc -y -p ${{secrets.TRANSCRYPT_KEY}}
       - run: make lint
       - run: make deploy
         env:
           AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
           AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-        
+
