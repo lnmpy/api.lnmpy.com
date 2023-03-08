@@ -1,7 +1,7 @@
 all: serve
 
 install:
-	yarn install --no-save
+	yarn install --frozen-lockfile
 
 deploy:
 	@node_modules/.bin/sls deploy -v
