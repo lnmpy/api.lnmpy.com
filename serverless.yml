@@ -23,43 +23,6 @@ plugins:
   - serverless-offline
 
 functions:
-  rss:
-    handler: apis.rss
-    events:
-      - http:
-          method: GET
-          path: rss/{provider}
-      - http:
-          method: GET
-          path: rss/{provider}/{args+}
-  auth-proxy:
-    handler: apis.gfw_proxy
-    events:
-      - http:
-          method: ANY
-          path: public/proxy/{service}/{provider}
-          cors: true
-      - http:
-          method: ANY
-          path: public/proxy/{service}/{provider}/{args+}
-          cors: true
-      - http:
-          method: ANY
-          path: proxy/{service}/{provider}
-          cors: true
-      - http:
-          method: ANY
-          path: proxy/{service}/{provider}/{args+}
-          cors: true
-  notify:
-    handler: apis.notify
-    events:
-      - http:
-          method: ANY
-          path: notify/{service}
-      - http:
-          method: ANY
-          path: notify/{service}/{to}
   url:
     handler: apis.url
     events:

@@ -1,13 +1,12 @@
 {
   "name": "api.lnmpy.com",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "elvis@lnmpy.com",
   "description": "",
   "dependencies": {
-    "google-auth-library": "^8.7.0",
+    "aws-sdk": "^2.1345.0",
     "superagent": "^8.0.9",
-    "superagent-charset": "^1.2.0",
-    "xml2js": "^0.4.23"
+    "superagent-charset": "^1.2.0"
   },
   "devDependencies": {
     "eslint": "^8.35.0",

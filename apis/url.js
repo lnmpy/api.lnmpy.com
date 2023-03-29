@@ -1,6 +1,6 @@
 const AWS = require('aws-sdk'); // eslint-disable-line import/no-extraneous-dependencies
 const Utils = require('../utils');
-const SECRET = require('../.secret').notify; // eslint-disable-line import/extensions
+const SECRET = require('../.secret').url.LIST_SECRET; // eslint-disable-line import/extensions
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
@@ -49,7 +49,7 @@ function POST(event, context, callback) {
 }
 
 function LIST(event, context, callback) {
-  if (event.headers.Authorization !== SECRET.authorization) {
+  if (event.headers.Authorization !== SECRET) {
     return Utils.ServiceDenied(event, context, callback);
   }
   const params = {
@@ -116,7 +116,7 @@ function GET(event, context, callback) {
 }
 
 function DELETE(event, context, callback) {
-  if (event.headers.Authorization !== SECRET.authorization) {
+  if (event.headers.Authorization !== SECRET) {
     return Utils.ServiceDenied(event, context, callback);
   }
   const params = {

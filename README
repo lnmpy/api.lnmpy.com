@@ -1,18 +1,5 @@
 # Public api deployed on AWS
 
-
-## Rss wrapers
-- GET https://api.lnmpy.com/rss/xitu
-- GET https://api.lnmpy.com/rss/xitu/android
-
-## GFW Proxy
-- POST https://api.lnmpy.com/proxy/auth/google
-- POST https://api.lnmpy.com/proxy/calendart/google/<your secret url>
-
-## Toby backend api
-- POST https://api.lnmpy.com/toby/users/login
-- GET https://api.lnmpy.com/toby/states
-
 ## Shorten Url
 - POST https://api.lnmpy.com/url
 - GET https://api.lnmpy.com/url/{id}
