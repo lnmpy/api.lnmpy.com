@@ -16,7 +16,7 @@ jobs:
           node-version: 18
       - run: npm i yarn@latest --no-save
       - run: make install
-      - run: git checkout .
+      - run: git stash
       - run: wget https://raw.githubusercontent.com/elasticdog/transcrypt/master/transcrypt
       - run: bash ./transcrypt -c aes-256-cbc -y -p ${{secrets.TRANSCRYPT_KEY}}
       - run: make lint
