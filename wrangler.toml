@@ -3,6 +3,7 @@ main = "src/index.js"
 compatibility_date = "2023-05-18"
 compatibility_flags = ["nodejs_compat"]
 
+workers_dev = false
 routes = [
   { pattern = "api.lnmpy.com", custom_domain = true }
 ]
