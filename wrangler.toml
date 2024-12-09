@@ -1,0 +1,14 @@
+name = "api-lnmpy-com"
+main = "src/index.js"
+compatibility_date = "2023-05-18"
+compatibility_flags = ["nodejs_compat"]
+
+routes = [
+  { pattern = "api.lnmpy.com", custom_domain = true }
+]
+
+
+[observability]
+enabled = true
+
+
