@@ -5,13 +5,10 @@
   "scripts": {
     "deploy": "wrangler deploy",
     "dev": "wrangler dev",
-    "start": "wrangler dev",
-    "test": "vitest"
+    "start": "wrangler dev"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.5.2",
-    "vitest": "2.1.8",
-    "wrangler": "^3.60.3"
+    "wrangler": "3.95.0"
   },
   "dependencies": {
     "js-yaml": "^4.1.0"
