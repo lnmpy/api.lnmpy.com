@@ -145,7 +145,7 @@ export default {
 	async fetch(request) {
 		const searchParams = new URL(request.url).searchParams;
 		const profile = searchParams.get('profile') || '';
-		const endpoint = searchParams.get('endpoint') || 'https://vps-convert.elvis-112.workers.dev/sub';
+		const endpoint = searchParams.get('endpoint') || 'https://url.v1.mk/sub';
 		const configParam = searchParams.get('config') || 'ACL4SSR_Online_Mini_AdblockPlus.ini';
 
 		if (configParam.startsWith('ACL4SSR_Online_')) {
