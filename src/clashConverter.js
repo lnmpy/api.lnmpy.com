@@ -145,7 +145,7 @@ export default {
 	async fetch(request) {
 		const searchParams = new URL(request.url).searchParams;
 		const profile = searchParams.get('profile') || '';
-		const endpoint = searchParams.get('endpoint') || 'https://api.nexconvert.com/sub';
+		const endpoint = searchParams.get('endpoint') || 'https://vps-convert.elvis-112.workers.dev/sub';
 		const configParam = searchParams.get('config') || 'ACL4SSR_Online_Mini_AdblockPlus.ini';
 
 		if (configParam.startsWith('ACL4SSR_Online_')) {
@@ -153,7 +153,6 @@ export default {
 		}
 		searchParams.append('target', 'clash');
 		const disableDns = searchParams.get('disable_dns') === 'true';
-
 		try {
 			const resp = await fetch(endpoint + '?' + searchParams.toString()).then((r) => r.text());
 			const clashConfig = yaml.load(resp);
