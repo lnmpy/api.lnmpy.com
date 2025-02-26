@@ -17,6 +17,7 @@ const pddRules = {
 	'vgunxpkt.com': 'DIRECT',
 
 	// 国内网站, 被公司屏蔽, 从hk节点回源较快
+	'zijieapi.com': '🇭🇰 香港节点',
 	'docs.qq.com': '🇭🇰 香港节点',
 	'processon.com': '🇭🇰 香港节点',
 	'docin.com': '🇭🇰 香港节点',
