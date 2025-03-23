@@ -153,7 +153,7 @@ export default {
 			searchParams.append('config', `https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/${configParam}`);
 		}
 		searchParams.append('target', 'clash');
-		const disableDns = searchParams.get('disable_dns') === 'true';
+		let disableDns = searchParams.get('disable_dns') === 'true';
 		try {
 			const resp = await fetch(endpoint + '?' + searchParams.toString()).then((r) => r.text());
 			const clashConfig = yaml.load(resp);
@@ -162,6 +162,7 @@ export default {
 
 			if (profile === 'pdd') {
 				rules = { ...rules, ...filterValidRules(pddRules, clashConfig) };
+				disableDns = true; // 公司网络需使用内置dns
 			}
 
 			return new Response(updateConfig(clashConfig, rules, disableDns), {
