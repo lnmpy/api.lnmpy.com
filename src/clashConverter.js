@@ -38,7 +38,7 @@ const globalRules = {
 	'adobe.com': '🐟 漏网之鱼',
 };
 
-function updateConfig(config, rules, disableDns = false) {
+function updateConfig(config, rules, disableDns = true) {
 	if (Object.keys(rules).length === 0) return;
 
 	// 覆盖规则
@@ -155,7 +155,7 @@ export default {
 		}
 		searchParams.set('target', 'clash');
 		searchParams.set('emoji', 'true');
-		let disableDns = searchParams.get('disable_dns') === 'true';
+		let disableDns = searchParams.get('disable_dns') !== 'false';
 		try {
 			const resp = await fetch(endpoint + '?' + searchParams.toString()).then((r) => r.text());
 			const clashConfig = yaml.load(resp);
