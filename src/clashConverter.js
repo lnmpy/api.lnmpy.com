@@ -151,9 +151,10 @@ export default {
 		const configParam = searchParams.get('config') || 'ACL4SSR_Online_Mini_AdblockPlus.ini';
 
 		if (configParam.startsWith('ACL4SSR_Online_')) {
-			searchParams.append('config', `https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/${configParam}`);
+			searchParams.set('config', `https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/${configParam}`);
 		}
-		searchParams.append('target', 'clash');
+		searchParams.set('target', 'clash');
+		searchParams.set('emoji', 'true');
 		let disableDns = searchParams.get('disable_dns') === 'true';
 		try {
 			const resp = await fetch(endpoint + '?' + searchParams.toString()).then((r) => r.text());
