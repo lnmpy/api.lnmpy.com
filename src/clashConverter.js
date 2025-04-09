@@ -1,53 +1,51 @@
 import yaml from 'js-yaml';
 
-const pddRules = {
-	'pddg.net': 'DIRECT',
-	'testdev.ltd': 'DIRECT',
-	'temu.team': 'DIRECT',
-	'htjdemo.net': 'DIRECT',
-	'kwcdn.com': 'DIRECT',
-	'pdd.net': 'DIRECT',
-	'test.net': 'DIRECT',
-	'yiran.com': 'DIRECT',
-	'pddpic.com': 'DIRECT',
-	'moremorepin.com': 'DIRECT',
-	'yangkeduo.com': 'DIRECT',
-	'pinduoduo.com': 'DIRECT',
-	'hutaojie.com': 'DIRECT',
-	'vgunxpkt.com': 'DIRECT',
+const pddRules = [
+	'DOMAIN-SUFFIX,pddg.net,DIRECT',
+	'DOMAIN-SUFFIX,testdev.ltd,DIRECT',
+	'DOMAIN-SUFFIX,temu.team,DIRECT',
+	'DOMAIN-SUFFIX,htjdemo.net,DIRECT',
+	'DOMAIN-SUFFIX,kwcdn.com,DIRECT',
+	'DOMAIN-SUFFIX,pdd.net,DIRECT',
+	'DOMAIN-SUFFIX,test.net,DIRECT',
+	'DOMAIN-SUFFIX,yiran.com,DIRECT',
+	'DOMAIN-SUFFIX,pddpic.com,DIRECT',
+	'DOMAIN-SUFFIX,moremorepin.com,DIRECT',
+	'DOMAIN-SUFFIX,yangkeduo.com,DIRECT',
+	'DOMAIN-SUFFIX,pinduoduo.com,DIRECT',
+	'DOMAIN-SUFFIX,hutaojie.com,DIRECT',
+	'DOMAIN-SUFFIX,vgunxpkt.com,DIRECT',
 
 	// 国内网站, 被公司屏蔽, 从hk节点回源较快
-	'zijieapi.com': '🇭🇰 香港节点',
-	'docs.qq.com': '🇭🇰 香港节点',
-	'processon.com': '🇭🇰 香港节点',
-	'docin.com': '🇭🇰 香港节点',
-	'douding.cn': '🇭🇰 香港节点',
-	'live.com': '🇭🇰 香港节点',
-	'office365.com': '🇭🇰 香港节点',
-	'www.upyun.com': '🇭🇰 香港节点',
-	'weibo.com': '🇭🇰 香港节点',
-	'weibo.cn': '🇭🇰 香港节点',
-	'maimai.cn': '🇭🇰 香港节点',
-	'taou.com': '🇭🇰 香港节点',
-};
+	'DOMAIN-SUFFIX,docs.qq.com,🇭🇰 香港节点',
+	'DOMAIN-SUFFIX,processon.com,🇭🇰 香港节点',
+	'DOMAIN-SUFFIX,docin.com,🇭🇰 香港节点',
+	'DOMAIN-SUFFIX,douding.cn,🇭🇰 香港节点',
+	'DOMAIN-SUFFIX,live.com,🇭🇰 香港节点',
+	'DOMAIN-SUFFIX,office365.com,🇭🇰 香港节点',
+	'DOMAIN-SUFFIX,www.upyun.com,🇭🇰 香港节点',
+	'DOMAIN-SUFFIX,weibo.com,🇭🇰 香港节点',
+	'DOMAIN-SUFFIX,weibo.cn,🇭🇰 香港节点',
+	'DOMAIN-SUFFIX,maimai.cn,🇭🇰 香港节点',
+	'DOMAIN-SUFFIX,taou.com,🇭🇰 香港节点',
+	'DOMAIN-SUFFIX,zijieapi.com,🐟 漏网之鱼',
 
-const globalRules = {
-	'account.jetbrains.com': 'REJECT', // 阻拦jetbrains激活
+	// 微信ip
+	'IP-CIDR,43.174.80.27/32,🐟 漏网之鱼,no-resolve',
+];
 
-	'fonts.gstatic.com': '🐟 漏网之鱼',
-	'adobe.com': '🐟 漏网之鱼',
-};
+const globalRules = [
+	'DOMAIN-SUFFIX,account.jetbrains.com,REJECT', // 阻拦jetbrains激活
+
+	'DOMAIN-SUFFIX,fonts.gstatic.com,🐟 漏网之鱼',
+	'DOMAIN-SUFFIX,adobe.com,🐟 漏网之鱼',
+];
 
 function updateConfig(config, rules, disableDns = true) {
 	if (Object.keys(rules).length === 0) return;
 
 	// 覆盖规则
-	config.rules = config.rules.filter((rule) => {
-		return !(rule.startsWith('DOMAIN-SUFFIX,') && rules[rule.split(',')[1]]);
-	});
-
-	const newRules = Object.entries(rules).map(([domain, proxy]) => `DOMAIN-SUFFIX,${domain},${proxy}`);
-	config.rules = [...newRules, ...config.rules];
+	config.rules = [...rules, ...config.rules];
 
 	// 禁用 DNS
 	if (disableDns) {
@@ -61,8 +59,9 @@ function filterValidRules(rules, config) {
 	const validProxies = config.proxies?.map((p) => p.name) || [];
 	const validProxyGroups = config['proxy-groups']?.map((p) => p.name) || [];
 	const validActions = ['DIRECT', 'REJECT', ...validProxies, ...validProxyGroups];
+	const validPrefix = ['DOMAIN-SUFFIX', 'IP-CIDR', 'DOMAIN-KEYWORD', 'DOMAIN'];
 
-	return Object.fromEntries(Object.entries(rules).filter(([_, action]) => validActions.includes(action)));
+	return rules.filter((r) => validPrefix.includes(r.split(',')[0])).filter((r) => validActions.includes(r.split(',')[2]));
 }
 
 function updateProxyGroup(config) {
@@ -163,7 +162,7 @@ export default {
 			updateProxyGroup(clashConfig);
 
 			if (profile === 'pdd') {
-				rules = { ...rules, ...filterValidRules(pddRules, clashConfig) };
+				rules = [ ...rules, ...filterValidRules(pddRules, clashConfig) ];
 				disableDns = true; // 公司网络需使用内置dns
 			}
 
