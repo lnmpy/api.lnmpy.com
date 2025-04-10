@@ -32,6 +32,7 @@ const pddRules = [
 
 	// 微信ip
 	'IP-CIDR,43.174.80.27/32,🐟 漏网之鱼,no-resolve',
+	'IP-CIDR,118.212.235.78/32,🐟 漏网之鱼,no-resolve',
 ];
 
 const globalRules = [
