@@ -1,20 +1,20 @@
 import yaml from 'js-yaml';
 
 const pddRules = [
-	'DOMAIN-SUFFIX,pddg.net,DIRECT',
-	'DOMAIN-SUFFIX,testdev.ltd,DIRECT',
-	'DOMAIN-SUFFIX,temu.team,DIRECT',
-	'DOMAIN-SUFFIX,htjdemo.net,DIRECT',
-	'DOMAIN-SUFFIX,kwcdn.com,DIRECT',
-	'DOMAIN-SUFFIX,pdd.net,DIRECT',
-	'DOMAIN-SUFFIX,test.net,DIRECT',
-	'DOMAIN-SUFFIX,yiran.com,DIRECT',
-	'DOMAIN-SUFFIX,pddpic.com,DIRECT',
-	'DOMAIN-SUFFIX,moremorepin.com,DIRECT',
-	'DOMAIN-SUFFIX,yangkeduo.com,DIRECT',
-	'DOMAIN-SUFFIX,pinduoduo.com,DIRECT',
-	'DOMAIN-SUFFIX,hutaojie.com,DIRECT',
-	'DOMAIN-SUFFIX,vgunxpkt.com,DIRECT',
+	'DOMAIN-SUFFIX,pddg.net,🎯 全球直连',
+	'DOMAIN-SUFFIX,testdev.ltd,🎯 全球直连',
+	'DOMAIN-SUFFIX,temu.team,🎯 全球直连',
+	'DOMAIN-SUFFIX,htjdemo.net,🎯 全球直连',
+	'DOMAIN-SUFFIX,kwcdn.com,🎯 全球直连',
+	'DOMAIN-SUFFIX,pdd.net,🎯 全球直连',
+	'DOMAIN-SUFFIX,test.net,🎯 全球直连',
+	'DOMAIN-SUFFIX,yiran.com,🎯 全球直连',
+	'DOMAIN-SUFFIX,pddpic.com,🎯 全球直连',
+	'DOMAIN-SUFFIX,moremorepin.com,🎯 全球直连',
+	'DOMAIN-SUFFIX,yangkeduo.com,🎯 全球直连',
+	'DOMAIN-SUFFIX,pinduoduo.com,🎯 全球直连',
+	'DOMAIN-SUFFIX,hutaojie.com,🎯 全球直连',
+	'DOMAIN-SUFFIX,vgunxpkt.com,🎯 全球直连',
 
 	// 国内网站, 被公司屏蔽, 从hk节点回源较快
 	'DOMAIN-SUFFIX,docs.qq.com,🚀 节点选择',
@@ -30,12 +30,6 @@ const pddRules = [
 	'DOMAIN-SUFFIX,zijieapi.com,🚀 节点选择',
 	'DOMAIN-SUFFIX,live.com,🚀 节点选择',
 
-	// 微信ip, 只用ip, 数量不多, 就先这么维护着吧. 走PROCESS-NAME规则覆盖面太广了
-	'IP-CIDR,43.174.80.27/32,🚀 节点选择,no-resolve',
-	'IP-CIDR,118.212.235.78/32,🚀 节点选择,no-resolve',
-	'IP-CIDR,153.3.247.89/32,🚀 节点选择,no-resolve',
-	'IP-CIDR,118.212.235.68/32,🚀 节点选择,no-resolve',
-	'PROCESS-NAME,WeChat,🚀 节点选择',
 ];
 
 const globalRules = [
@@ -166,7 +160,7 @@ export default {
 			updateProxyGroup(clashConfig);
 
 			if (profile === 'pdd') {
-				rules = [ ...rules, ...filterValidRules(pddRules, clashConfig) ];
+				rules = [...rules, ...filterValidRules(pddRules, clashConfig)];
 				disableDns = true; // 公司网络需使用内置dns
 			}
 
