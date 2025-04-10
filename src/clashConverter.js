@@ -17,29 +17,31 @@ const pddRules = [
 	'DOMAIN-SUFFIX,vgunxpkt.com,DIRECT',
 
 	// 国内网站, 被公司屏蔽, 从hk节点回源较快
-	'DOMAIN-SUFFIX,docs.qq.com,🇭🇰 香港节点',
-	'DOMAIN-SUFFIX,processon.com,🇭🇰 香港节点',
-	'DOMAIN-SUFFIX,docin.com,🇭🇰 香港节点',
-	'DOMAIN-SUFFIX,douding.cn,🇭🇰 香港节点',
-	'DOMAIN-SUFFIX,live.com,🇭🇰 香港节点',
-	'DOMAIN-SUFFIX,office365.com,🇭🇰 香港节点',
-	'DOMAIN-SUFFIX,www.upyun.com,🇭🇰 香港节点',
-	'DOMAIN-SUFFIX,weibo.com,🇭🇰 香港节点',
-	'DOMAIN-SUFFIX,weibo.cn,🇭🇰 香港节点',
-	'DOMAIN-SUFFIX,maimai.cn,🇭🇰 香港节点',
-	'DOMAIN-SUFFIX,taou.com,🇭🇰 香港节点',
-	'DOMAIN-SUFFIX,zijieapi.com,🐟 漏网之鱼',
+	'DOMAIN-SUFFIX,docs.qq.com,🚀 节点选择',
+	'DOMAIN-SUFFIX,processon.com,🚀 节点选择',
+	'DOMAIN-SUFFIX,docin.com,🚀 节点选择',
+	'DOMAIN-SUFFIX,douding.cn,🚀 节点选择',
+	'DOMAIN-SUFFIX,office365.com,🚀 节点选择',
+	'DOMAIN-SUFFIX,www.upyun.com,🚀 节点选择',
+	'DOMAIN-SUFFIX,weibo.com,🚀 节点选择',
+	'DOMAIN-SUFFIX,weibo.cn,🚀 节点选择',
+	'DOMAIN-SUFFIX,maimai.cn,🚀 节点选择',
+	'DOMAIN-SUFFIX,taou.com,🚀 节点选择',
+	'DOMAIN-SUFFIX,zijieapi.com,🚀 节点选择',
+	'DOMAIN-SUFFIX,live.com,🚀 节点选择',
 
-	// 微信ip
-	'IP-CIDR,43.174.80.27/32,🐟 漏网之鱼,no-resolve',
-	'IP-CIDR,118.212.235.78/32,🐟 漏网之鱼,no-resolve',
+	// 微信ip, 只用ip, 数量不多, 就先这么维护着吧. 走PROCESS-NAME规则覆盖面太广了
+	'IP-CIDR,43.174.80.27/32,🚀 节点选择,no-resolve',
+	'IP-CIDR,118.212.235.78/32,🚀 节点选择,no-resolve',
+	'IP-CIDR,153.3.247.89/32,🚀 节点选择,no-resolve',
+	// 'PROCESS-NAME,WeChat,🚀 节点选择',
 ];
 
 const globalRules = [
 	'DOMAIN-SUFFIX,account.jetbrains.com,REJECT', // 阻拦jetbrains激活
 
-	'DOMAIN-SUFFIX,fonts.gstatic.com,🐟 漏网之鱼',
-	'DOMAIN-SUFFIX,adobe.com,🐟 漏网之鱼',
+	'DOMAIN-SUFFIX,fonts.gstatic.com,🚀 节点选择',
+	'DOMAIN-SUFFIX,adobe.com,🚀 节点选择',
 ];
 
 function updateConfig(config, rules, disableDns = true) {

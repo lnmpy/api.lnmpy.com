@@ -8,7 +8,7 @@
     "start": "wrangler dev"
   },
   "devDependencies": {
-    "wrangler": "3.95.0"
+    "wrangler": "^4.9.1"
   },
   "dependencies": {
     "js-yaml": "^4.1.0"
