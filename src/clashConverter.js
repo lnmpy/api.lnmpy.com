@@ -34,7 +34,8 @@ const pddRules = [
 	'IP-CIDR,43.174.80.27/32,🚀 节点选择,no-resolve',
 	'IP-CIDR,118.212.235.78/32,🚀 节点选择,no-resolve',
 	'IP-CIDR,153.3.247.89/32,🚀 节点选择,no-resolve',
-	// 'PROCESS-NAME,WeChat,🚀 节点选择',
+	'IP-CIDR,118.212.235.68/32,🚀 节点选择,no-resolve',
+	'PROCESS-NAME,WeChat,🚀 节点选择',
 ];
 
 const globalRules = [
@@ -62,7 +63,7 @@ function filterValidRules(rules, config) {
 	const validProxies = config.proxies?.map((p) => p.name) || [];
 	const validProxyGroups = config['proxy-groups']?.map((p) => p.name) || [];
 	const validActions = ['DIRECT', 'REJECT', ...validProxies, ...validProxyGroups];
-	const validPrefix = ['DOMAIN-SUFFIX', 'IP-CIDR', 'DOMAIN-KEYWORD', 'DOMAIN'];
+	const validPrefix = ['DOMAIN-SUFFIX', 'IP-CIDR', 'DOMAIN-KEYWORD', 'DOMAIN', 'PROCESS-NAME'];
 
 	return rules.filter((r) => validPrefix.includes(r.split(',')[0])).filter((r) => validActions.includes(r.split(',')[2]));
 }
