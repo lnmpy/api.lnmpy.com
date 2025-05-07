@@ -29,7 +29,6 @@ const pddRules = [
 	'DOMAIN-SUFFIX,taou.com,🚀 节点选择',
 	'DOMAIN-SUFFIX,zijieapi.com,🚀 节点选择',
 	'DOMAIN-SUFFIX,live.com,🚀 节点选择',
-
 ];
 
 const globalRules = [
@@ -63,9 +62,13 @@ function filterValidRules(rules, config) {
 }
 
 function updateProxyGroup(config) {
-	const proxies = config.proxies || [];
-	const baseCostProxies = proxies
+	const proxies = (config.proxies || [])
 		.filter((proxy) => {
+			// 过滤掉小众节点
+			if (!proxy.name.includes('🇭🇰') && !proxy.name.includes('🇸🇬') && !proxy.name.includes('🇺🇸') && !proxy.name.includes('🇯🇵')) {
+				return false;
+			}
+			// 过滤掉倍速节点
 			const match = proxy.name.match(/.*(\d+)x.*/);
 			return !match || match[1] === '1';
 		})
@@ -83,12 +86,12 @@ function updateProxyGroup(config) {
 			url: 'http://www.gstatic.com/generate_204',
 			interval: 300,
 			tolerance: 50,
-			proxies: baseCostProxies,
+			proxies: proxies,
 		},
 		{
 			name: '🚀 手动切换',
 			type: 'select',
-			proxies: proxies.map((p) => p.name),
+			proxies: (config.proxies || []).map((p) => p.name),
 		},
 		{
 			name: '🎯 全球直连',
@@ -111,7 +114,7 @@ function updateProxyGroup(config) {
 			url: 'http://www.gstatic.com/generate_204',
 			interval: 300,
 			tolerance: 50,
-			proxies: baseCostProxies.filter((n) => n.includes('🇭🇰')),
+			proxies: proxies.filter((n) => n.includes('🇭🇰')),
 		},
 		{
 			name: '🇸🇬 狮城节点',
@@ -119,7 +122,7 @@ function updateProxyGroup(config) {
 			url: 'http://www.gstatic.com/generate_204',
 			interval: 300,
 			tolerance: 50,
-			proxies: baseCostProxies.filter((n) => n.includes('🇸🇬')),
+			proxies: proxies.filter((n) => n.includes('🇸🇬')),
 		},
 		{
 			name: '🇺🇸 美国节点',
@@ -127,7 +130,7 @@ function updateProxyGroup(config) {
 			url: 'http://www.gstatic.com/generate_204',
 			interval: 300,
 			tolerance: 50,
-			proxies: baseCostProxies.filter((n) => n.includes('🇺🇸')),
+			proxies: proxies.filter((n) => n.includes('🇺🇸')),
 		},
 		{
 			name: '🇯🇵 日本节点',
@@ -135,7 +138,7 @@ function updateProxyGroup(config) {
 			url: 'http://www.gstatic.com/generate_204',
 			interval: 300,
 			tolerance: 50,
-			proxies: baseCostProxies.filter((n) => n.includes('🇯🇵')),
+			proxies: proxies.filter((n) => n.includes('🇯🇵')),
 		},
 	];
 }
