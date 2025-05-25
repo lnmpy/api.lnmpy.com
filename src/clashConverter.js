@@ -33,6 +33,8 @@ const pddRules = [
 
 const globalRules = [
 	'DOMAIN-SUFFIX,account.jetbrains.com,REJECT', // 阻拦jetbrains激活
+	'DOMAIN-SUFFIX,gvt1.com,REJECT', // 阻止google chrome自动更新
+	'PROCESS-NAME,nsurlsessiond,REJECT', // 阻止后台进程大量下载
 
 	'DOMAIN-SUFFIX,fonts.gstatic.com,🚀 节点选择',
 	'DOMAIN-SUFFIX,adobe.com,🚀 节点选择',
