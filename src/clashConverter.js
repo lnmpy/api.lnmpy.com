@@ -143,9 +143,10 @@ function updateProxyGroup(config) {
 			proxies: proxies.filter((n) => n.includes('🇯🇵')),
 		},
 	];
-	// remove empty proxies
-	config['proxy-groups'] = config['proxy-groups'].filter((n) => n.proxies.length);
-	config['proxy-groups'][0].proxies = config['proxy-groups'][0].proxies.filter((n) => config['proxy-groups'][n.name]);
+	// 移除empty proxy-groups
+	const validProxyGroups = config['proxy-groups'].filter((group) => group.proxies.length).map((group) => group.name);
+	config['proxy-groups'] = config['proxy-groups'].filter((group) => validProxyGroups.includes(group.name));
+	config['proxy-groups'][0].proxies = config['proxy-groups'][0].proxies.filter((proxy) => validProxyGroups.includes(proxy));
 }
 
 export default {
