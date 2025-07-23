@@ -87,7 +87,7 @@ function updateProxyGroup(config) {
 			type: 'url-test',
 			url: 'http://www.gstatic.com/generate_204',
 			interval: 600,
-			tolerance: 100,
+			tolerance: 120,
 			proxies: proxies,
 		},
 		{
@@ -115,7 +115,7 @@ function updateProxyGroup(config) {
 			type: 'url-test',
 			url: 'http://www.gstatic.com/generate_204',
 			interval: 600,
-			tolerance: 100,
+			tolerance: 120,
 			proxies: proxies.filter((n) => n.includes('🇭🇰')),
 		},
 		{
@@ -123,7 +123,7 @@ function updateProxyGroup(config) {
 			type: 'url-test',
 			url: 'http://www.gstatic.com/generate_204',
 			interval: 600,
-			tolerance: 100,
+			tolerance: 120,
 			proxies: proxies.filter((n) => n.includes('🇸🇬')),
 		},
 		{
@@ -131,7 +131,7 @@ function updateProxyGroup(config) {
 			type: 'url-test',
 			url: 'http://www.gstatic.com/generate_204',
 			interval: 600,
-			tolerance: 100,
+			tolerance: 120,
 			proxies: proxies.filter((n) => n.includes('🇺🇸')),
 		},
 		{
@@ -139,7 +139,7 @@ function updateProxyGroup(config) {
 			type: 'url-test',
 			url: 'http://www.gstatic.com/generate_204',
 			interval: 600,
-			tolerance: 100,
+			tolerance: 120,
 			proxies: proxies.filter((n) => n.includes('🇯🇵')),
 		},
 	];
