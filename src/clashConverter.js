@@ -143,7 +143,11 @@ function updateProxyGroup(config) {
 			proxies: proxies.filter((n) => n.includes('🇯🇵')),
 		},
 	];
+	// remove empty proxies
+	config['proxy-groups'] = config['proxy-groups'].filter((n) => n.proxies.length);
+	config['proxy-groups'][0].proxies = config['proxy-groups'][0].proxies.filter((n) => config['proxy-groups'][n.name]);
 }
+
 export default {
 	async fetch(request) {
 		const searchParams = new URL(request.url).searchParams;
