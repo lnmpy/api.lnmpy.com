@@ -51,7 +51,8 @@ function updateConfig(config, rules, disableDns = true) {
 		delete config.dns;
 	}
 
-	return yaml.dump(config, { indent: 2 });
+	// 避免yaml序列化出现ref字段, 使用JSON.parse(JSON.stringify)深拷贝打断此优化
+	return yaml.dump(JSON.parse(JSON.stringify(config)), { indent: 2 });
 }
 
 function filterValidRules(rules, config) {
@@ -80,11 +81,25 @@ function updateProxyGroup(config) {
 		{
 			name: '🚀 节点选择',
 			type: 'select',
-			proxies: ['♻️ 自动选择', '🚀 手动切换', '🇭🇰 香港节点', '🇸🇬 狮城节点', '🇺🇸 美国节点', '🇯🇵 日本节点'],
+			proxies: ['♻️ 自动选择', '🔁 故障转移', '🚀 手动切换', '🇭🇰 香港节点', '🇸🇬 狮城节点', '🇺🇸 美国节点', '🇯🇵 日本节点'],
 		},
 		{
+			// ss,vmess,vless等轻量协议优先使用该模式
+			// 每隔internal秒进行测试, 若存在更优节点, 则切换到更优节点
+			// 更优定义: 延迟小于 当前节点 + tolerance
 			name: '♻️ 自动选择',
 			type: 'url-test',
+			url: 'http://www.gstatic.com/generate_204',
+			interval: 600,
+			tolerance: 120,
+			proxies: proxies,
+		},
+		{
+			// trojan等较重协议优先使用该模式
+			// 每隔internal秒进行测试, 若当前节点是否可用, 若不可用才切换至下一个节点
+			// 可用定义: 延迟小于 最低延迟节点 + tolerance
+			name: '🔁 故障转移',
+			type: 'fallback',
 			url: 'http://www.gstatic.com/generate_204',
 			interval: 600,
 			tolerance: 120,
