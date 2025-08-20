@@ -1,16 +1,19 @@
 {
-  "name": "api-lnmpy-com",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "deploy": "wrangler deploy",
-    "dev": "wrangler dev",
-    "start": "wrangler dev"
-  },
-  "devDependencies": {
-    "wrangler": "^4.9.1"
-  },
-  "dependencies": {
-    "js-yaml": "^4.1.0"
-  }
+	"name": "api-lnmpy-com",
+	"version": "0.1.0",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"deploy": "wrangler deploy --minify",
+		"dev": "wrangler dev",
+		"cf-typegen": "wrangler types --env-interface CloudflareBindings"
+	},
+	"devDependencies": {
+		"@types/js-yaml": "^4.0.9",
+		"wrangler": "^4.9.1"
+	},
+	"dependencies": {
+		"hono": "^4.9.2",
+		"js-yaml": "^4.1.0"
+	}
 }

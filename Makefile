@@ -1,8 +1,8 @@
 dev:
-	npx wrangler dev
+	npm run dev
 
 install:
 	npm install --no-save
 
 deploy:
-	npx wrangler deploy
+	npm run deploy
