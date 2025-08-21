@@ -63,7 +63,7 @@ function updateConfig(
 
 function filterValidRules(rules: string[], config: ClashConfig): string[] {
 	const validProxies = config.proxies?.map((p) => p.name) || [];
-	const validProxyGroups = config.proxyGroups?.map((p) => p.name) || [];
+	const validProxyGroups = config["proxy-groups"]?.map((p) => p.name) || [];
 	const validActions = [
 		"DIRECT",
 		"REJECT",
@@ -101,7 +101,7 @@ function updateProxyGroup(config: ClashConfig) {
 		})
 		.map((proxy) => proxy.name);
 
-	config.proxyGroups = [
+	config["proxy-groups"] = [
 		{
 			name: "🚀 节点选择",
 			type: "select",
@@ -191,13 +191,13 @@ function updateProxyGroup(config: ClashConfig) {
 		},
 	];
 	// 移除empty proxy-groups
-	const validProxyGroups = config.proxyGroups
+	const validProxyGroups = config["proxy-groups"]
 		.filter((group) => group.proxies?.length)
 		.map((group) => group.name);
-	config.proxyGroups = config.proxyGroups.filter((group) =>
+	config["proxy-groups"] = config["proxy-groups"].filter((group) =>
 		validProxyGroups.includes(group.name)
 	);
-	config.proxyGroups[0].proxies = config.proxyGroups[0].proxies?.filter(
+	config["proxy-groups"][0].proxies = config["proxy-groups"][0].proxies?.filter(
 		(proxy) => validProxyGroups.includes(proxy)
 	);
 }
