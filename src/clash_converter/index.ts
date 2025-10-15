@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import yaml from "js-yaml";
 import { ClashConfig } from "./types";
+import { providers } from "./config.json";
 
 function updateProxyGroup(config: ClashConfig) {
 	const proxies = (config.proxies || [])
@@ -121,6 +122,20 @@ function updateProxyGroup(config: ClashConfig) {
 	);
 }
 
+// 将形如{运通}=token的形式替换为对应的endpoint, 减少多设备间的维护
+function replaceUrlVar(urlParam: string) {
+	const matches = [...urlParam.matchAll(/\{([^}]+)\}/g)];
+	let newUrlParam = urlParam;
+	for (const m of matches) {
+		const key = m[1];
+		const val = providers[key as keyof typeof providers];
+		if (val) {
+			newUrlParam = newUrlParam.replace(`{${key}}=`, val);
+		}
+	}
+	return newUrlParam;
+}
+
 const app = new Hono();
 app.get("/", async (c) => {
 	const searchParams = c.req.query();
@@ -137,6 +152,7 @@ app.get("/", async (c) => {
 
 	searchParams["target"] = "clash";
 	searchParams["emoji"] = "true";
+	searchParams["url"] = replaceUrlVar(searchParams["url"]);
 
 	try {
 		const qs = new URLSearchParams(searchParams).toString();
