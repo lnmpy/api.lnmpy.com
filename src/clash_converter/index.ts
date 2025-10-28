@@ -77,6 +77,17 @@ function updateProxyGroup(config: ClashConfig) {
 			type: "select",
 			proxies: ["🚀 节点选择", "🎯 全球直连"],
 		},
+		// 诸如chatgpt,gemini等, 必须指定为非香港节点
+		{
+			name: "☯️ 海外节点",
+			type: "url-test",
+			url: "http://www.gstatic.com/generate_204",
+			interval: 600,
+			tolerance: 120,
+			proxies: proxies.filter(
+				(n) => n.includes("🇸🇬") || n.includes("🇺🇸") || n.includes("🇯🇵")
+			),
+		},
 		{
 			name: "🇭🇰 香港节点",
 			type: "url-test",
@@ -122,6 +133,21 @@ function updateProxyGroup(config: ClashConfig) {
 	);
 }
 
+function updateRule(config: ClashConfig) {
+	const aiRules = [
+		"DOMAIN-SUFFIX,bard.google.com,☯️ 海外节点",
+		"DOMAIN-SUFFIX,chatgpt.com,☯️ 海外节点",
+		"DOMAIN-SUFFIX,claude.ai,☯️ 海外节点",
+		"DOMAIN-SUFFIX,cursor.com,☯️ 海外节点",
+		"DOMAIN-SUFFIX,cursor.sh,☯️ 海外节点",
+		"DOMAIN-SUFFIX,gemini.google.com,☯️ 海外节点",
+		"DOMAIN-KEYWORD,anthropic,☯️ 海外节点",
+		"DOMAIN-KEYWORD,claude,☯️ 海外节点",
+		"DOMAIN-KEYWORD,openai,☯️ 海外节点",
+	];
+	config.rules.unshift(...aiRules);
+}
+
 // 将形如{运通}=token的形式替换为对应的endpoint, 减少多设备间的维护
 function replaceUrlVar(urlParam: string) {
 	const matches = [...urlParam.matchAll(/\{([^}]+)\}/g)];
@@ -160,6 +186,7 @@ app.get("/", async (c) => {
 		const clashConfig = yaml.load(resp) as ClashConfig;
 
 		updateProxyGroup(clashConfig);
+		updateRule(clashConfig);
 
 		// 避免yaml序列化出现ref字段, 使用JSON.parse(JSON.stringify)深拷贝打断此优化
 		const dumpString = yaml.dump(JSON.parse(JSON.stringify(clashConfig)), {
