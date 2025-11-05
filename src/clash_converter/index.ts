@@ -33,6 +33,7 @@ function updateProxyGroup(config: ClashConfig) {
 				"🇸🇬 狮城节点",
 				"🇺🇸 美国节点",
 				"🇯🇵 日本节点",
+				"🇪🇺 欧洲节点",
 			],
 		},
 		{
@@ -77,17 +78,6 @@ function updateProxyGroup(config: ClashConfig) {
 			type: "select",
 			proxies: ["🚀 节点选择", "🎯 全球直连"],
 		},
-		// 诸如chatgpt,gemini等, 必须指定为非香港节点
-		{
-			name: "☯️ 海外节点",
-			type: "url-test",
-			url: "http://www.gstatic.com/generate_204",
-			interval: 600,
-			tolerance: 120,
-			proxies: proxies.filter(
-				(n) => n.includes("🇸🇬") || n.includes("🇺🇸") || n.includes("🇯🇵")
-			),
-		},
 		{
 			name: "🇭🇰 香港节点",
 			type: "url-test",
@@ -119,6 +109,25 @@ function updateProxyGroup(config: ClashConfig) {
 			interval: 600,
 			tolerance: 120,
 			proxies: proxies.filter((n) => n.includes("🇯🇵")),
+		},
+		{
+			name: "🇪🇺 欧洲节点",
+			type: "url-test",
+			url: "http://www.gstatic.com/generate_204",
+			interval: 600,
+			tolerance: 120,
+			proxies: proxies.filter((n) =>
+				["🇩🇪", "🇬🇧", "🇳🇱", "🇸🇪", "🇫🇷", "🇩🇪"].some((c) => n.includes(c))
+			),
+		},
+		// 诸如chatgpt,gemini等, 必须指定为非香港节点
+		{
+			name: "☯️ 海外节点",
+			type: "url-test",
+			url: "http://www.gstatic.com/generate_204",
+			interval: 600,
+			tolerance: 120,
+			proxies: ["🇸🇬 狮城节点", "🇺🇸 美国节点", "🇯🇵 日本节点", "🇪🇺 欧洲节点"],
 		},
 	];
 	// 移除empty proxy-groups
