@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import yaml from "js-yaml";
 import { ClashConfig } from "./types";
-import { providers } from "./config.json";
+import { providers, rules } from "./config.json";
 
 function updateProxyGroup(config: ClashConfig) {
 	const proxies = (config.proxies || []).map((proxy) => proxy.name);
@@ -131,18 +131,7 @@ function updateProxyGroup(config: ClashConfig) {
 }
 
 function updateRule(config: ClashConfig) {
-	const aiRules = [
-		"DOMAIN-SUFFIX,bard.google.com,☯️ 海外节点",
-		"DOMAIN-SUFFIX,chatgpt.com,☯️ 海外节点",
-		"DOMAIN-SUFFIX,claude.ai,☯️ 海外节点",
-		"DOMAIN-SUFFIX,cursor.com,☯️ 海外节点",
-		"DOMAIN-SUFFIX,cursor.sh,☯️ 海外节点",
-		"DOMAIN-SUFFIX,gemini.google.com,☯️ 海外节点",
-		"DOMAIN-KEYWORD,anthropic,☯️ 海外节点",
-		"DOMAIN-KEYWORD,claude,☯️ 海外节点",
-		"DOMAIN-KEYWORD,openai,☯️ 海外节点",
-	];
-	config.rules.unshift(...aiRules);
+	config.rules.unshift(...rules);
 }
 
 // 将形如{运通}=token的形式替换为对应的endpoint, 减少多设备间的维护
