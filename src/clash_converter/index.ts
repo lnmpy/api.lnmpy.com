@@ -4,22 +4,7 @@ import { ClashConfig } from "./types";
 import { providers } from "./config.json";
 
 function updateProxyGroup(config: ClashConfig) {
-	const proxies = (config.proxies || [])
-		.filter((proxy) => {
-			// 过滤掉小众节点
-			if (
-				!proxy.name.includes("🇭🇰") &&
-				!proxy.name.includes("🇸🇬") &&
-				!proxy.name.includes("🇺🇸") &&
-				!proxy.name.includes("🇯🇵")
-			) {
-				return false;
-			}
-			// 过滤掉倍速节点
-			const match = proxy.name.match(/.*(\d+)x.*/);
-			return !match || match[1] === "1";
-		})
-		.map((proxy) => proxy.name);
+	const proxies = (config.proxies || []).map((proxy) => proxy.name);
 
 	config["proxy-groups"] = [
 		{
@@ -131,15 +116,18 @@ function updateProxyGroup(config: ClashConfig) {
 		},
 	];
 	// 移除empty proxy-groups
-	const validProxyGroups = config["proxy-groups"]
-		.filter((group) => group.proxies?.length)
+	const emptyProxyGroups = config["proxy-groups"]
+		.filter((group) => group.proxies?.length == 0)
 		.map((group) => group.name);
-	config["proxy-groups"] = config["proxy-groups"].filter((group) =>
-		validProxyGroups.includes(group.name)
-	);
-	config["proxy-groups"][0].proxies = config["proxy-groups"][0].proxies?.filter(
-		(proxy) => validProxyGroups.includes(proxy)
-	);
+
+	config["proxy-groups"] = config["proxy-groups"]
+		.filter((group) => !emptyProxyGroups.includes(group.name))
+		.map((group) => ({
+			...group,
+			proxies: group.proxies?.filter(
+				(proxy) => !emptyProxyGroups.includes(proxy)
+			),
+		}));
 }
 
 function updateRule(config: ClashConfig) {
