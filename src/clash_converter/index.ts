@@ -18,7 +18,6 @@ function updateProxyGroup(config: ClashConfig) {
 				"🇸🇬 狮城节点",
 				"🇺🇸 美国节点",
 				"🇯🇵 日本节点",
-				"🇪🇺 欧洲节点",
 			],
 		},
 		{
