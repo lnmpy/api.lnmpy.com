@@ -6,13 +6,11 @@
 		"saiboyun.org": "https://dy.sbyun.org/sby/"
 	},
 	"rules": [
-		"DOMAIN-SUFFIX,ai.google.dev,☯️ 海外节点",
-		"DOMAIN-SUFFIX,labs.google.dev,☯️ 海外节点",
-		"DOMAIN-SUFFIX,clients6.google.com,☯️ 海外节点",
-		"DOMAIN-SUFFIX,generativelanguage.googleapis.com,☯️ 海外节点",
-		"DOMAIN-SUFFIX,notebooklm.google.com,☯️ 海外节点",
-		"DOMAIN-SUFFIX,bard.google.com,☯️ 海外节点",
-		"DOMAIN-SUFFIX,gemini.google.com,☯️ 海外节点",
+		"DOMAIN-SUFFIX,google,☯️ 海外节点",
+		"DOMAIN-SUFFIX,google.dev,☯️ 海外节点",
+		"DOMAIN-SUFFIX,googleapis.com,☯️ 海外节点",
+		"DOMAIN-SUFFIX,google.com,☯️ 海外节点",
+		"DOMAIN-KEYWORD,google,☯️ 海外节点",
 
 		"DOMAIN-SUFFIX,cursor.com,☯️ 海外节点",
 		"DOMAIN-SUFFIX,cursor.sh,☯️ 海外节点",
