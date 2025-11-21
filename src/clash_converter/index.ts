@@ -151,7 +151,7 @@ const app = new Hono();
 app.get("/", async (c) => {
 	const searchParams = c.req.query();
 	// 参考 https://suburl.v1.mk
-	const endpoint = searchParams["endpoint"] || "https://url.v1.mk/sub";
+	const endpoint = searchParams["endpoint"] || "https://sub.xeton.dev/sub";
 	const configParam =
 		searchParams["config"] || "ACL4SSR_Online_Mini_AdblockPlus.ini";
 
