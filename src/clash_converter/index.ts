@@ -3,6 +3,28 @@ import yaml from "js-yaml";
 import { ClashConfig } from "./types";
 import { providers, rules } from "./config.json";
 
+function filterMultiProxy(
+	config: ClashConfig,
+	searchParams: Record<string, string>
+) {
+	const multiMin = parseFloat(searchParams["filter_multi_min"]);
+	const multiMax = parseFloat(searchParams["multi_node_max"]);
+	if (config.proxies === undefined || config.proxies.length === 0) {
+		return;
+	}
+	config.proxies = config.proxies.filter((n) => {
+		const filterReg = /(\d+(?:\.\d+)?)\s*x/g; // 匹配基于 1.7x  0.9x  3x 这样的倍率定义
+		for (const match of n.name.matchAll(filterReg)) {
+			const numberStr = match[1];
+			const number = parseFloat(numberStr);
+			if (number < multiMin || number > multiMax) {
+				return false;
+			}
+		}
+		return true;
+	});
+}
+
 function updateProxyGroup(config: ClashConfig) {
 	const proxies = (config.proxies || []).map((proxy) => proxy.name);
 
@@ -150,26 +172,28 @@ function replaceUrlVar(urlParam: string) {
 const app = new Hono();
 app.get("/", async (c) => {
 	const searchParams = c.req.query();
-	// 参考 https://suburl.v1.mk
+	searchParams["url"] = replaceUrlVar(searchParams["url"]);
+
+	// 默认参数
+	// 转换服务 参考 https://suburl.v1.mk
 	const endpoint = searchParams["endpoint"] || "https://sub.xeton.dev/sub";
 	const configParam =
 		searchParams["config"] || "ACL4SSR_Online_Mini_AdblockPlus.ini";
-
 	if (configParam.startsWith("ACL4SSR_Online_")) {
 		searchParams[
 			"config"
 		] = `https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/${configParam}`;
 	}
-
+	searchParams["filter_multi_min"] = searchParams["multi_node_min"] || "0";
+	searchParams["multi_node_max"] = searchParams["multi_node_max"] || "2";
 	searchParams["target"] = "clash";
 	searchParams["emoji"] = "true";
-	searchParams["url"] = replaceUrlVar(searchParams["url"]);
 
 	try {
 		const qs = new URLSearchParams(searchParams).toString();
 		const resp = await fetch(`${endpoint}?${qs}`).then((r) => r.text());
 		const clashConfig = yaml.load(resp) as ClashConfig;
-
+		filterMultiProxy(clashConfig, searchParams);
 		updateProxyGroup(clashConfig);
 		updateRule(clashConfig);
 
