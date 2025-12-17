@@ -3,13 +3,13 @@ import yaml from "js-yaml";
 import { ClashConfig } from "./types";
 import { providers, rules } from "./config.json";
 
-function filterMultiProxy(
+function updateProxy(
 	config: ClashConfig,
-	searchParams: Record<string, string>
+	requestParams: Record<string, string>
 ) {
-	const multiMin = parseFloat(searchParams["filter_multi_min"]);
-	const multiMax = parseFloat(searchParams["multi_node_max"]);
-	if (config.proxies === undefined || config.proxies.length === 0) {
+	const multiMin = parseFloat(requestParams["node_cost_min"]);
+	const multiMax = parseFloat(requestParams["node_cost_max"]);
+	if (!config.proxies) {
 		return;
 	}
 	config.proxies = config.proxies.filter((n) => {
@@ -26,7 +26,7 @@ function filterMultiProxy(
 }
 
 function updateProxyGroup(config: ClashConfig) {
-	const proxies = (config.proxies || []).map((proxy) => proxy.name);
+	const proxies = config.proxies.map((p) => p.name);
 
 	config["proxy-groups"] = [
 		{
@@ -70,21 +70,6 @@ function updateProxyGroup(config: ClashConfig) {
 			proxies: (config.proxies || []).map((p) => p.name),
 		},
 		{
-			name: "🎯 全球直连",
-			type: "select",
-			proxies: ["DIRECT", "🚀 节点选择"],
-		},
-		{
-			name: "🛑 全球拦截",
-			type: "select",
-			proxies: ["REJECT", "DIRECT"],
-		},
-		{
-			name: "🐟 漏网之鱼",
-			type: "select",
-			proxies: ["🚀 节点选择", "🎯 全球直连"],
-		},
-		{
 			name: "🇭🇰 香港节点",
 			type: "url-test",
 			url: "http://www.gstatic.com/generate_204",
@@ -126,15 +111,13 @@ function updateProxyGroup(config: ClashConfig) {
 				["🇩🇪", "🇬🇧", "🇳🇱", "🇸🇪", "🇫🇷", "🇩🇪"].some((c) => n.includes(c))
 			),
 		},
-		// 诸如chatgpt,gemini等, 必须指定为非香港节点
-		// 云通有部分节点日本新加坡节点无法访问gemini, 临时限制海外节点为美国节点和欧洲节点
 		{
-			name: "☯️ 海外节点",
+			name: "✨ AI平台",
 			type: "url-test",
 			url: "http://www.gstatic.com/generate_204",
 			interval: 600,
 			tolerance: 120,
-			proxies: ["🇺🇸 美国节点", "🇪🇺 欧洲节点"],
+			proxies: proxies.filter((n) => n.includes("🇺🇸")), // 目前观测下来美国节点访问gemini是最稳的
 		},
 	];
 	// 移除empty proxy-groups
@@ -154,10 +137,20 @@ function updateProxyGroup(config: ClashConfig) {
 
 function updateRule(config: ClashConfig) {
 	config.rules.unshift(...rules);
+
+	// 遍历所有的rule将其中的全球拦截等规则替换, 减少proxy-groups的数量
+	config.rules = config.rules.map((r) => r.replace("🛑 全球拦截", "REJECT"));
+	config.rules = config.rules.map((r) => r.replace("🎯 全球直连", "DIRECT"));
+	config.rules = config.rules.map((r) =>
+		r.replace("🐟 漏网之鱼", "🚀 节点选择")
+	);
 }
 
 // 将形如{运通}=token的形式替换为对应的endpoint, 减少多设备间的维护
 function replaceUrlVar(urlParam: string) {
+	if (!urlParam) {
+		return urlParam;
+	}
 	const matches = [...urlParam.matchAll(/\{([^}]+)\}/g)];
 	let newUrlParam = urlParam;
 	for (const m of matches) {
@@ -170,33 +163,59 @@ function replaceUrlVar(urlParam: string) {
 	return newUrlParam;
 }
 
-const app = new Hono();
-app.get("/", async (c) => {
-	const searchParams = c.req.query();
-	searchParams["url"] = replaceUrlVar(searchParams["url"]);
+type Bindings = {
+	r2_storgae: R2Bucket;
+};
 
+const app = new Hono<{ Bindings: Bindings }>();
+app.get("/", async (c) => {
+	const requestParams = c.req.query();
+	const profile = requestParams["profile"];
+	delete requestParams["profile"]; // profile不能泄露至其他请求
+	if (!!profile) {
+		const profileObject = await c.env.r2_storgae.get(
+			`clash_converter_profile/${profile}.yaml`
+		);
+		if (!!profileObject) {
+			return c.text(await profileObject.text(), 200, {
+				"Content-Type": "text/plain;charset=utf-8",
+			});
+		}
+	}
+
+	requestParams["url"] = replaceUrlVar(requestParams["url"]);
+	if (!requestParams["url"]) {
+		return c.text("url parameter missing", 404, {
+			"Content-Type": "text/plain;charset=utf-8",
+		});
+	}
 	// 默认参数
-	// 转换服务 参考 https://suburl.v1.mk
-	const endpoint = searchParams["endpoint"] || "https://sub.xeton.dev/sub";
+	// 转换服务 参考 https://acl4ssr-sub.github.io
+	const endpoint = requestParams["endpoint"] || "https://sub.xeton.dev/sub";
 	const configParam =
-		searchParams["config"] || "ACL4SSR_Online_Mini_AdblockPlus.ini";
+		requestParams["config"] || "ACL4SSR_Online_Mini_AdblockPlus.ini";
 	if (configParam.startsWith("ACL4SSR_Online_")) {
-		searchParams[
+		requestParams[
 			"config"
 		] = `https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/${configParam}`;
 	}
-	searchParams["filter_multi_min"] = searchParams["multi_node_min"] || "0";
-	searchParams["multi_node_max"] = searchParams["multi_node_max"] || "2";
-	searchParams["target"] = "clash";
-	searchParams["emoji"] = "true";
+	requestParams["node_cost_min"] = requestParams["node_cost_min"] || "0";
+	requestParams["node_cost_max"] = requestParams["node_cost_max"] || "2";
+	requestParams["target"] = "clash";
+	requestParams["emoji"] = "true";
 
 	try {
-		const qs = new URLSearchParams(searchParams).toString();
+		const qs = new URLSearchParams(requestParams).toString();
 		const resp = await fetch(`${endpoint}?${qs}`).then((r) => r.text());
 		const clashConfig = yaml.load(resp) as ClashConfig;
-		filterMultiProxy(clashConfig, searchParams);
-		updateProxyGroup(clashConfig);
+
+		if (!clashConfig || !clashConfig.rules) {
+			throw Error("Config invalid");
+		}
+
 		updateRule(clashConfig);
+		updateProxy(clashConfig, requestParams);
+		updateProxyGroup(clashConfig);
 
 		// 避免yaml序列化出现ref字段, 使用JSON.parse(JSON.stringify)深拷贝打断此优化
 		const dumpString = yaml.dump(JSON.parse(JSON.stringify(clashConfig)), {
@@ -207,7 +226,7 @@ app.get("/", async (c) => {
 			"Content-Type": "text/plain;charset=utf-8",
 		});
 	} catch (error: any) {
-		return c.text(error.message, 400, {
+		return c.text(`Internal Server Error: ${error.message}`, 500, {
 			"Content-Type": "text/plain;charset=utf-8",
 		});
 	}
