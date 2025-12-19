@@ -4,28 +4,5 @@
 		"mojie.me": "https://msub.xn--m7r52rosihxm.com/api/v1/client/subscribe?token=",
 		"yuntong.one": "https://tai-ku-la-xuanwoba.com/yt?token=",
 		"saiboyun.org": "https://dy.sbyun.org/sby/"
-	},
-	"rules": [
-		"DOMAIN-SUFFIX,googlevideo.com,🚀 节点选择",
-		"DOMAIN-SUFFIX,google,✨ AI平台",
-		"DOMAIN-SUFFIX,google.dev,✨ AI平台",
-		"DOMAIN-SUFFIX,googleapis.com,✨ AI平台",
-		"DOMAIN-SUFFIX,google.com,✨ AI平台",
-		"DOMAIN-SUFFIX,googleusercontent.com,✨ AI平台",
-		"DOMAIN-SUFFIX,googletagmanager.com,✨ AI平台",
-		"DOMAIN-KEYWORD,google,✨ AI平台",
-		"DOMAIN-KEYWORD,colab,✨ AI平台",
-		"DOMAIN-KEYWORD,developerprofiles,✨ AI平台",
-		"DOMAIN-KEYWORD,generativelanguage,✨ AI平台",
-
-		"DOMAIN-SUFFIX,cursor.com,✨ AI平台",
-		"DOMAIN-SUFFIX,cursor.sh,✨ AI平台",
-
-		"DOMAIN-SUFFIX,claude.ai,✨ AI平台",
-		"DOMAIN-KEYWORD,anthropic,✨ AI平台",
-		"DOMAIN-KEYWORD,claude,✨ AI平台",
-
-		"DOMAIN-SUFFIX,chatgpt.com,✨ AI平台",
-		"DOMAIN-KEYWORD,openai,✨ AI平台"
-	]
+	}
 }

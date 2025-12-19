@@ -1,7 +1,7 @@
-import { Hono } from "hono";
+import { Hono, Context } from "hono";
 import yaml from "js-yaml";
 import { ClashConfig } from "./types";
-import { providers, rules } from "./config.json";
+import { providers } from "./config.json";
 
 function updateProxy(
 	config: ClashConfig,
@@ -111,14 +111,6 @@ function updateProxyGroup(config: ClashConfig) {
 				["🇩🇪", "🇬🇧", "🇳🇱", "🇸🇪", "🇫🇷", "🇩🇪"].some((c) => n.includes(c))
 			),
 		},
-		{
-			name: "✨ AI平台",
-			type: "url-test",
-			url: "http://www.gstatic.com/generate_204",
-			interval: 600,
-			tolerance: 120,
-			proxies: proxies.filter((n) => n.includes("🇺🇸")), // 目前观测下来美国节点访问gemini是最稳的
-		},
 	];
 	// 移除empty proxy-groups
 	const emptyProxyGroups = config["proxy-groups"]
@@ -135,7 +127,7 @@ function updateProxyGroup(config: ClashConfig) {
 		}));
 }
 
-function updateRule(config: ClashConfig) {
+function updateRule(config: ClashConfig, rules: string[]) {
 	config.rules.unshift(...rules);
 
 	// 遍历所有的rule将其中的全球拦截等规则替换, 减少proxy-groups的数量
@@ -163,6 +155,44 @@ function replaceUrlVar(urlParam: string) {
 	return newUrlParam;
 }
 
+async function loadR2Profile(
+	c: Context,
+	requestParams: Record<string, string>
+): Promise<string> {
+	const profile = requestParams["profile"];
+	delete requestParams["profile"];
+	if (!profile) {
+		return "";
+	}
+	const profileObject = await c.env.r2_storgae.get(
+		`clash_converter_profile/${profile}.yaml`
+	);
+	if (!profileObject) {
+		return "";
+	}
+	return profileObject.text();
+}
+
+async function loadR2Rules(
+	c: Context,
+	requestParams: Record<string, string>
+): Promise<string[]> {
+	const rules = (requestParams["rules"] || "").split("|");
+	delete requestParams["rules"];
+	let result: string[] = [];
+	if (!rules) {
+		return result;
+	}
+	for (const rule of rules) {
+		const rs = await c.env.r2_storgae.get(`clash_converter_rule/${rule}.yaml`);
+		if (!rs) {
+			continue;
+		}
+		result.push(...(yaml.load(await rs.text()) as string[]));
+	}
+	return result;
+}
+
 type Bindings = {
 	r2_storgae: R2Bucket;
 };
@@ -170,18 +200,14 @@ type Bindings = {
 const app = new Hono<{ Bindings: Bindings }>();
 app.get("/", async (c) => {
 	const requestParams = c.req.query();
-	const profile = requestParams["profile"];
-	delete requestParams["profile"]; // profile不能泄露至其他请求
+	const profile = await loadR2Profile(c, requestParams);
 	if (!!profile) {
-		const profileObject = await c.env.r2_storgae.get(
-			`clash_converter_profile/${profile}.yaml`
-		);
-		if (!!profileObject) {
-			return c.text(await profileObject.text(), 200, {
-				"Content-Type": "text/plain;charset=utf-8",
-			});
-		}
+		return c.text(profile, 200, {
+			"Content-Type": "text/plain;charset=utf-8",
+		});
 	}
+
+	const rules = await loadR2Rules(c, requestParams);
 
 	requestParams["url"] = replaceUrlVar(requestParams["url"]);
 	if (!requestParams["url"]) {
@@ -189,6 +215,7 @@ app.get("/", async (c) => {
 			"Content-Type": "text/plain;charset=utf-8",
 		});
 	}
+
 	// 默认参数
 	// 转换服务 参考 https://acl4ssr-sub.github.io
 	const endpoint = requestParams["endpoint"] || "https://sub.xeton.dev/sub";
@@ -213,7 +240,7 @@ app.get("/", async (c) => {
 			throw Error("Config invalid");
 		}
 
-		updateRule(clashConfig);
+		updateRule(clashConfig, rules);
 		updateProxy(clashConfig, requestParams);
 		updateProxyGroup(clashConfig);
 
