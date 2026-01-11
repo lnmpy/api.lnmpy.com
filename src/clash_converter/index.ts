@@ -1,14 +1,26 @@
 import { Hono, Context } from "hono";
 import yaml from "js-yaml";
-import { ClashConfig } from "./types";
+import { ClashConfig, ClashProxy } from "./types";
 import { providers } from "./config.json";
 
-function updateProxy(
+async function updateProxy(
 	config: ClashConfig,
-	requestParams: Record<string, string>
+	requestParams: Record<string, string>,
 ) {
-	const multiMin = parseFloat(requestParams["node_cost_min"]);
-	const multiMax = parseFloat(requestParams["node_cost_max"]);
+	if (requestParams["proxy_full"] === "true") {
+		const url = requestParams["url"];
+		config.proxies = [];
+		for (const u of url.split("|")) {
+			const proxies = await loadClashProxies(u);
+			config.proxies.push(...proxies);
+		}
+		if (requestParams["emoji"] === "true") {
+			addProxyEmoji(config.proxies);
+		}
+	}
+
+	const multiMin = parseFloat(requestParams["proxy_cost_min"]);
+	const multiMax = parseFloat(requestParams["proxy_cost_max"]);
 	if (!config.proxies) {
 		return;
 	}
@@ -23,6 +35,63 @@ function updateProxy(
 		}
 		return true;
 	});
+}
+
+async function loadClashProxies(url: string) {
+	return fetch(url, {
+		headers: {
+			"User-Agent": "ClashMeta/1.8.0",
+		},
+	})
+		.then((res) => res.text())
+		.then((resp) => yaml.load(resp) as ClashConfig)
+		.then((c) => c.proxies);
+}
+
+function addProxyEmoji(proxies: ClashProxy[]) {
+	for (const proxy of proxies) {
+		let emoji = "";
+		if (proxy.name.includes("香港")) {
+			emoji = "🇭🇰";
+		} else if (proxy.name.includes("新加坡")) {
+			emoji = "🇸🇬";
+		} else if (proxy.name.includes("美国")) {
+			emoji = "🇺🇸";
+		} else if (proxy.name.includes("日本")) {
+			emoji = "🇯🇵";
+		} else if (proxy.name.includes("德国")) {
+			emoji = "🇩🇪";
+		} else if (proxy.name.includes("英国")) {
+			emoji = "🇬🇧";
+		} else if (proxy.name.includes("荷兰")) {
+			emoji = "🇳🇱";
+		} else if (proxy.name.includes("意大利")) {
+			emoji = "🇮🇹";
+		} else if (proxy.name.includes("法国")) {
+			emoji = "🇫🇷";
+		} else if (proxy.name.includes("加拿大")) {
+			emoji = "🇨🇦";
+		} else if (proxy.name.includes("澳大利亚")) {
+			emoji = "🇦🇺";
+		} else if (proxy.name.includes("新西兰")) {
+			emoji = "🇳🇿";
+		} else if (proxy.name.includes("土耳其")) {
+			emoji = "🇹🇷";
+		} else if (proxy.name.includes("台湾")) {
+			emoji = "🇹🇼";
+		} else if (proxy.name.includes("印度")) {
+			emoji = "🇮🇳";
+		} else if (proxy.name.includes("罗马尼亚")) {
+			emoji = "🇷🇴";
+		} else if (proxy.name.includes("俄罗斯")) {
+			emoji = "🇷🇺";
+		} else if (proxy.name.includes("西班牙")) {
+			emoji = "🇪🇸";
+		} else if (proxy.name.includes("希腊")) {
+			emoji = "🇬🇷";
+		}
+		proxy.name = emoji + " " + proxy.name;
+	}
 }
 
 function updateProxyGroup(config: ClashConfig) {
@@ -75,7 +144,7 @@ function updateProxyGroup(config: ClashConfig) {
 			url: "http://www.gstatic.com/generate_204",
 			interval: 600,
 			tolerance: 120,
-			proxies: proxies.filter((n) => n.includes("🇭🇰")),
+			proxies: proxies.filter((n) => n.includes("香港")),
 		},
 		{
 			name: "🇸🇬 狮城节点",
@@ -83,7 +152,7 @@ function updateProxyGroup(config: ClashConfig) {
 			url: "http://www.gstatic.com/generate_204",
 			interval: 600,
 			tolerance: 120,
-			proxies: proxies.filter((n) => n.includes("🇸🇬")),
+			proxies: proxies.filter((n) => n.includes("新加坡")),
 		},
 		{
 			name: "🇺🇸 美国节点",
@@ -91,7 +160,7 @@ function updateProxyGroup(config: ClashConfig) {
 			url: "http://www.gstatic.com/generate_204",
 			interval: 600,
 			tolerance: 120,
-			proxies: proxies.filter((n) => n.includes("🇺🇸")),
+			proxies: proxies.filter((n) => n.includes("美国")),
 		},
 		{
 			name: "🇯🇵 日本节点",
@@ -99,7 +168,7 @@ function updateProxyGroup(config: ClashConfig) {
 			url: "http://www.gstatic.com/generate_204",
 			interval: 600,
 			tolerance: 120,
-			proxies: proxies.filter((n) => n.includes("🇯🇵")),
+			proxies: proxies.filter((n) => n.includes("日本")),
 		},
 		{
 			name: "🇪🇺 欧洲节点",
@@ -108,7 +177,7 @@ function updateProxyGroup(config: ClashConfig) {
 			interval: 600,
 			tolerance: 120,
 			proxies: proxies.filter((n) =>
-				["🇩🇪", "🇬🇧", "🇳🇱", "🇸🇪", "🇫🇷", "🇩🇪"].some((c) => n.includes(c))
+				["德国", "英国", "荷兰", "意大利", "法国"].some((c) => n.includes(c)),
 			),
 		},
 	];
@@ -122,7 +191,7 @@ function updateProxyGroup(config: ClashConfig) {
 		.map((group) => ({
 			...group,
 			proxies: group.proxies?.filter(
-				(proxy) => !emptyProxyGroups.includes(proxy)
+				(proxy) => !emptyProxyGroups.includes(proxy),
 			),
 		}));
 }
@@ -134,7 +203,7 @@ function updateRule(config: ClashConfig, rules: string[]) {
 	config.rules = config.rules.map((r) => r.replace("🛑 全球拦截", "REJECT"));
 	config.rules = config.rules.map((r) => r.replace("🎯 全球直连", "DIRECT"));
 	config.rules = config.rules.map((r) =>
-		r.replace("🐟 漏网之鱼", "🚀 节点选择")
+		r.replace("🐟 漏网之鱼", "🚀 节点选择"),
 	);
 }
 
@@ -157,7 +226,7 @@ function replaceUrlVar(urlParam: string) {
 
 async function loadR2Profile(
 	c: Context,
-	requestParams: Record<string, string>
+	requestParams: Record<string, string>,
 ): Promise<string> {
 	const profile = requestParams["profile"];
 	delete requestParams["profile"];
@@ -165,7 +234,7 @@ async function loadR2Profile(
 		return "";
 	}
 	const profileObject = await c.env.r2_storgae.get(
-		`clash_converter_profile/${profile}.yaml`
+		`clash_converter_profile/${profile}.yaml`,
 	);
 	if (!profileObject) {
 		return "";
@@ -175,7 +244,7 @@ async function loadR2Profile(
 
 async function loadR2Rules(
 	c: Context,
-	requestParams: Record<string, string>
+	requestParams: Record<string, string>,
 ): Promise<string[]> {
 	const rules = (requestParams["rules"] || "").split("|");
 	delete requestParams["rules"];
@@ -222,14 +291,13 @@ app.get("/", async (c) => {
 	const configParam =
 		requestParams["config"] || "ACL4SSR_Online_Mini_AdblockPlus.ini";
 	if (configParam.startsWith("ACL4SSR_Online_")) {
-		requestParams[
-			"config"
-		] = `https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/${configParam}`;
+		requestParams["config"] =
+			`https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/${configParam}`;
 	}
-	requestParams["node_cost_min"] = requestParams["node_cost_min"] || "0";
-	requestParams["node_cost_max"] = requestParams["node_cost_max"] || "2";
+	requestParams["proxy_cost_min"] = requestParams["proxy_cost_min"] || "0";
+	requestParams["proxy_cost_max"] = requestParams["proxy_cost_max"] || "2";
 	requestParams["target"] = "clash";
-	requestParams["emoji"] = "true";
+	requestParams["emoji"] = requestParams["emoji"] || "true";
 
 	try {
 		const qs = new URLSearchParams(requestParams).toString();
@@ -239,9 +307,8 @@ app.get("/", async (c) => {
 		if (!clashConfig || !clashConfig.rules) {
 			throw Error("Config invalid");
 		}
-
 		updateRule(clashConfig, rules);
-		updateProxy(clashConfig, requestParams);
+		await updateProxy(clashConfig, requestParams);
 		updateProxyGroup(clashConfig);
 
 		// 避免yaml序列化出现ref字段, 使用JSON.parse(JSON.stringify)深拷贝打断此优化
