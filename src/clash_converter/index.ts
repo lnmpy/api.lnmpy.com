@@ -1,7 +1,6 @@
 import { Hono, Context } from "hono";
 import yaml from "js-yaml";
 import { ClashConfig, ClashProxy } from "./types";
-import { providers } from "./config.json";
 
 async function updateProxy(
 	config: ClashConfig,
@@ -207,23 +206,6 @@ function updateRule(config: ClashConfig, rules: string[]) {
 	);
 }
 
-// 将形如{运通}=token的形式替换为对应的endpoint, 减少多设备间的维护
-function replaceUrlVar(urlParam: string) {
-	if (!urlParam) {
-		return urlParam;
-	}
-	const matches = [...urlParam.matchAll(/\{([^}]+)\}/g)];
-	let newUrlParam = urlParam;
-	for (const m of matches) {
-		const key = m[1];
-		const val = providers[key as keyof typeof providers];
-		if (val) {
-			newUrlParam = newUrlParam.replace(`{${key}}=`, val);
-		}
-	}
-	return newUrlParam;
-}
-
 async function loadR2Profile(
 	c: Context,
 	requestParams: Record<string, string>,
@@ -278,7 +260,6 @@ app.get("/", async (c) => {
 
 	const rules = await loadR2Rules(c, requestParams);
 
-	requestParams["url"] = replaceUrlVar(requestParams["url"]);
 	if (!requestParams["url"]) {
 		return c.text("url parameter missing", 404, {
 			"Content-Type": "text/plain;charset=utf-8",
