@@ -13,6 +13,12 @@ async function updateProxy(
 			const proxies = await loadClashProxies(u);
 			config.proxies.push(...proxies);
 		}
+		if (!!requestParams["exclude"]) {
+			const exclude = requestParams["exclude"].split(",");
+			config.proxies = config.proxies.filter(
+				(n) => !exclude.some((e) => n.name.includes(e)),
+			);
+		}
 		if (requestParams["emoji"] === "true") {
 			addProxyEmoji(config.proxies);
 		}
@@ -58,6 +64,8 @@ function addProxyEmoji(proxies: ClashProxy[]) {
 			emoji = "🇺🇸";
 		} else if (proxy.name.includes("日本")) {
 			emoji = "🇯🇵";
+		} else if (proxy.name.includes("韩国")) {
+			emoji = "🇰🇷";
 		} else if (proxy.name.includes("德国")) {
 			emoji = "🇩🇪";
 		} else if (proxy.name.includes("英国")) {
