@@ -1,10 +1,108 @@
-import { Hono } from "hono";
+import { Hono, Context } from "hono";
 import yaml from "js-yaml";
-import { ClashConfig } from "./types";
-import { providers, rules } from "./config.json";
+import { ClashConfig, ClashProxy } from "./types";
+
+async function updateProxy(
+	config: ClashConfig,
+	requestParams: Record<string, string>,
+) {
+	if (requestParams["proxy_full"] === "true") {
+		const url = requestParams["url"];
+		config.proxies = [];
+		for (const u of url.split("|")) {
+			const proxies = await loadClashProxies(u);
+			config.proxies.push(...proxies);
+		}
+		if (!!requestParams["exclude"]) {
+			const exclude = requestParams["exclude"].split(",");
+			config.proxies = config.proxies.filter(
+				(n) => !exclude.some((e) => n.name.includes(e)),
+			);
+		}
+		if (requestParams["emoji"] === "true") {
+			addProxyEmoji(config.proxies);
+		}
+	}
+
+	const multiMin = parseFloat(requestParams["proxy_cost_min"]);
+	const multiMax = parseFloat(requestParams["proxy_cost_max"]);
+	if (!config.proxies) {
+		return;
+	}
+	config.proxies = config.proxies.filter((n) => {
+		const filterReg = /(\d+(?:\.\d+)?)\s*x/g; // 匹配基于 1.7x  0.9x  3x 这样的倍率定义
+		for (const match of n.name.matchAll(filterReg)) {
+			const numberStr = match[1];
+			const number = parseFloat(numberStr);
+			if (number < multiMin || number > multiMax) {
+				return false;
+			}
+		}
+		return true;
+	});
+}
+
+async function loadClashProxies(url: string) {
+	return fetch(url, {
+		headers: {
+			"User-Agent": "ClashMeta/1.8.0",
+		},
+	})
+		.then((res) => res.text())
+		.then((resp) => yaml.load(resp) as ClashConfig)
+		.then((c) => c.proxies);
+}
+
+function addProxyEmoji(proxies: ClashProxy[]) {
+	for (const proxy of proxies) {
+		let emoji = "";
+		if (proxy.name.includes("香港")) {
+			emoji = "🇭🇰";
+		} else if (proxy.name.includes("新加坡")) {
+			emoji = "🇸🇬";
+		} else if (proxy.name.includes("美国")) {
+			emoji = "🇺🇸";
+		} else if (proxy.name.includes("日本")) {
+			emoji = "🇯🇵";
+		} else if (proxy.name.includes("韩国")) {
+			emoji = "🇰🇷";
+		} else if (proxy.name.includes("德国")) {
+			emoji = "🇩🇪";
+		} else if (proxy.name.includes("英国")) {
+			emoji = "🇬🇧";
+		} else if (proxy.name.includes("荷兰")) {
+			emoji = "🇳🇱";
+		} else if (proxy.name.includes("意大利")) {
+			emoji = "🇮🇹";
+		} else if (proxy.name.includes("法国")) {
+			emoji = "🇫🇷";
+		} else if (proxy.name.includes("加拿大")) {
+			emoji = "🇨🇦";
+		} else if (proxy.name.includes("澳大利亚")) {
+			emoji = "🇦🇺";
+		} else if (proxy.name.includes("新西兰")) {
+			emoji = "🇳🇿";
+		} else if (proxy.name.includes("土耳其")) {
+			emoji = "🇹🇷";
+		} else if (proxy.name.includes("台湾")) {
+			emoji = "🇹🇼";
+		} else if (proxy.name.includes("印度")) {
+			emoji = "🇮🇳";
+		} else if (proxy.name.includes("罗马尼亚")) {
+			emoji = "🇷🇴";
+		} else if (proxy.name.includes("俄罗斯")) {
+			emoji = "🇷🇺";
+		} else if (proxy.name.includes("西班牙")) {
+			emoji = "🇪🇸";
+		} else if (proxy.name.includes("希腊")) {
+			emoji = "🇬🇷";
+		}
+		proxy.name = emoji + " " + proxy.name;
+	}
+}
 
 function updateProxyGroup(config: ClashConfig) {
-	const proxies = (config.proxies || []).map((proxy) => proxy.name);
+	const proxies = config.proxies.map((p) => p.name);
 
 	config["proxy-groups"] = [
 		{
@@ -48,27 +146,12 @@ function updateProxyGroup(config: ClashConfig) {
 			proxies: (config.proxies || []).map((p) => p.name),
 		},
 		{
-			name: "🎯 全球直连",
-			type: "select",
-			proxies: ["DIRECT", "🚀 节点选择"],
-		},
-		{
-			name: "🛑 全球拦截",
-			type: "select",
-			proxies: ["REJECT", "DIRECT"],
-		},
-		{
-			name: "🐟 漏网之鱼",
-			type: "select",
-			proxies: ["🚀 节点选择", "🎯 全球直连"],
-		},
-		{
 			name: "🇭🇰 香港节点",
 			type: "url-test",
 			url: "http://www.gstatic.com/generate_204",
 			interval: 600,
 			tolerance: 120,
-			proxies: proxies.filter((n) => n.includes("🇭🇰")),
+			proxies: proxies.filter((n) => n.includes("香港")),
 		},
 		{
 			name: "🇸🇬 狮城节点",
@@ -76,7 +159,7 @@ function updateProxyGroup(config: ClashConfig) {
 			url: "http://www.gstatic.com/generate_204",
 			interval: 600,
 			tolerance: 120,
-			proxies: proxies.filter((n) => n.includes("🇸🇬")),
+			proxies: proxies.filter((n) => n.includes("新加坡")),
 		},
 		{
 			name: "🇺🇸 美国节点",
@@ -84,7 +167,7 @@ function updateProxyGroup(config: ClashConfig) {
 			url: "http://www.gstatic.com/generate_204",
 			interval: 600,
 			tolerance: 120,
-			proxies: proxies.filter((n) => n.includes("🇺🇸")),
+			proxies: proxies.filter((n) => n.includes("美国")),
 		},
 		{
 			name: "🇯🇵 日本节点",
@@ -92,7 +175,7 @@ function updateProxyGroup(config: ClashConfig) {
 			url: "http://www.gstatic.com/generate_204",
 			interval: 600,
 			tolerance: 120,
-			proxies: proxies.filter((n) => n.includes("🇯🇵")),
+			proxies: proxies.filter((n) => n.includes("日本")),
 		},
 		{
 			name: "🇪🇺 欧洲节点",
@@ -101,17 +184,8 @@ function updateProxyGroup(config: ClashConfig) {
 			interval: 600,
 			tolerance: 120,
 			proxies: proxies.filter((n) =>
-				["🇩🇪", "🇬🇧", "🇳🇱", "🇸🇪", "🇫🇷", "🇩🇪"].some((c) => n.includes(c))
+				["德国", "英国", "荷兰", "意大利", "法国"].some((c) => n.includes(c)),
 			),
-		},
-		// 诸如chatgpt,gemini等, 必须指定为非香港节点
-		{
-			name: "☯️ 海外节点",
-			type: "url-test",
-			url: "http://www.gstatic.com/generate_204",
-			interval: 600,
-			tolerance: 120,
-			proxies: ["🇸🇬 狮城节点", "🇺🇸 美国节点", "🇯🇵 日本节点", "🇪🇺 欧洲节点"],
 		},
 	];
 	// 移除empty proxy-groups
@@ -124,54 +198,107 @@ function updateProxyGroup(config: ClashConfig) {
 		.map((group) => ({
 			...group,
 			proxies: group.proxies?.filter(
-				(proxy) => !emptyProxyGroups.includes(proxy)
+				(proxy) => !emptyProxyGroups.includes(proxy),
 			),
 		}));
 }
 
-function updateRule(config: ClashConfig) {
+function updateRule(config: ClashConfig, rules: string[]) {
 	config.rules.unshift(...rules);
+
+	// 遍历所有的rule将其中的全球拦截等规则替换, 减少proxy-groups的数量
+	config.rules = config.rules.map((r) => r.replace("🛑 全球拦截", "REJECT"));
+	config.rules = config.rules.map((r) => r.replace("🎯 全球直连", "DIRECT"));
+	config.rules = config.rules.map((r) =>
+		r.replace("🐟 漏网之鱼", "🚀 节点选择"),
+	);
 }
 
-// 将形如{运通}=token的形式替换为对应的endpoint, 减少多设备间的维护
-function replaceUrlVar(urlParam: string) {
-	const matches = [...urlParam.matchAll(/\{([^}]+)\}/g)];
-	let newUrlParam = urlParam;
-	for (const m of matches) {
-		const key = m[1];
-		const val = providers[key as keyof typeof providers];
-		if (val) {
-			newUrlParam = newUrlParam.replace(`{${key}}=`, val);
+async function loadR2Profile(
+	c: Context,
+	requestParams: Record<string, string>,
+): Promise<string> {
+	const profile = requestParams["profile"];
+	delete requestParams["profile"];
+	if (!profile) {
+		return "";
+	}
+	const profileObject = await c.env.r2_storgae.get(
+		`clash_converter_profile/${profile}.yaml`,
+	);
+	if (!profileObject) {
+		return "";
+	}
+	return profileObject.text();
+}
+
+async function loadR2Rules(
+	c: Context,
+	requestParams: Record<string, string>,
+): Promise<string[]> {
+	const rules = (requestParams["rules"] || "").split("|");
+	delete requestParams["rules"];
+	let result: string[] = [];
+	if (!rules) {
+		return result;
+	}
+	for (const rule of rules) {
+		const rs = await c.env.r2_storgae.get(`clash_converter_rule/${rule}.yaml`);
+		if (!rs) {
+			continue;
 		}
+		result.push(...(yaml.load(await rs.text()) as string[]));
 	}
-	return newUrlParam;
+	return result;
 }
 
-const app = new Hono();
-app.get("/", async (c) => {
-	const searchParams = c.req.query();
-	// 参考 https://suburl.v1.mk
-	const endpoint = searchParams["endpoint"] || "https://url.v1.mk/sub";
-	const configParam =
-		searchParams["config"] || "ACL4SSR_Online_Mini_AdblockPlus.ini";
+type Bindings = {
+	r2_storgae: R2Bucket;
+};
 
-	if (configParam.startsWith("ACL4SSR_Online_")) {
-		searchParams[
-			"config"
-		] = `https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/${configParam}`;
+const app = new Hono<{ Bindings: Bindings }>();
+app.get("/", async (c) => {
+	const requestParams = c.req.query();
+	const profile = await loadR2Profile(c, requestParams);
+	if (!!profile) {
+		return c.text(profile, 200, {
+			"Content-Type": "text/plain;charset=utf-8",
+		});
 	}
 
-	searchParams["target"] = "clash";
-	searchParams["emoji"] = "true";
-	searchParams["url"] = replaceUrlVar(searchParams["url"]);
+	const rules = await loadR2Rules(c, requestParams);
+
+	if (!requestParams["url"]) {
+		return c.text("url parameter missing", 404, {
+			"Content-Type": "text/plain;charset=utf-8",
+		});
+	}
+
+	// 默认参数
+	// 转换服务 参考 https://acl4ssr-sub.github.io
+	const endpoint = requestParams["endpoint"] || "https://sub.xeton.dev/sub";
+	const configParam =
+		requestParams["config"] || "ACL4SSR_Online_Mini_AdblockPlus.ini";
+	if (configParam.startsWith("ACL4SSR_Online_")) {
+		requestParams["config"] =
+			`https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/${configParam}`;
+	}
+	requestParams["proxy_cost_min"] = requestParams["proxy_cost_min"] || "0";
+	requestParams["proxy_cost_max"] = requestParams["proxy_cost_max"] || "2";
+	requestParams["target"] = "clash";
+	requestParams["emoji"] = requestParams["emoji"] || "true";
 
 	try {
-		const qs = new URLSearchParams(searchParams).toString();
+		const qs = new URLSearchParams(requestParams).toString();
 		const resp = await fetch(`${endpoint}?${qs}`).then((r) => r.text());
 		const clashConfig = yaml.load(resp) as ClashConfig;
 
+		if (!clashConfig || !clashConfig.rules) {
+			throw Error("Config invalid");
+		}
+		updateRule(clashConfig, rules);
+		await updateProxy(clashConfig, requestParams);
 		updateProxyGroup(clashConfig);
-		updateRule(clashConfig);
 
 		// 避免yaml序列化出现ref字段, 使用JSON.parse(JSON.stringify)深拷贝打断此优化
 		const dumpString = yaml.dump(JSON.parse(JSON.stringify(clashConfig)), {
@@ -182,7 +309,7 @@ app.get("/", async (c) => {
 			"Content-Type": "text/plain;charset=utf-8",
 		});
 	} catch (error: any) {
-		return c.text(error.message, 400, {
+		return c.text(`Internal Server Error: ${error.message}`, 500, {
 			"Content-Type": "text/plain;charset=utf-8",
 		});
 	}
