@@ -2,6 +2,16 @@ import { Hono, Context } from "hono";
 import yaml from "js-yaml";
 import { ClashConfig, ClashProxy } from "./types";
 
+function fetchAsClashClient(url: string): Promise<Response> {
+	const urlObj = new URL(url);
+	urlObj.searchParams.set("flag", "clash");
+	return fetch(urlObj.toString(), {
+		headers: {
+			"User-Agent": "ClashMeta/1.8.0",
+		},
+	});
+}
+
 async function updateProxy(
 	config: ClashConfig,
 	requestParams: Record<string, string>,
@@ -43,13 +53,7 @@ async function updateProxy(
 }
 
 async function loadClashProxies(url: string) {
-	const urlObj = new URL(url);
-	urlObj.searchParams.set("flag", "clash");
-	return fetch(urlObj.toString(), {
-		headers: {
-			"User-Agent": "ClashMeta/1.8.0",
-		},
-	})
+	return fetchAsClashClient(url)
 		.then((res) => res.text())
 		.then((resp) => yaml.load(resp) as ClashConfig)
 		.then((c) => c.proxies);
@@ -278,7 +282,10 @@ app.get("/", async (c) => {
 
 	// 默认参数
 	// 转换服务 参考 https://acl4ssr-sub.github.io
-	const endpoint = requestParams["endpoint"] || "https://sub.xeton.dev/sub";
+	const endpoints = [
+		requestParams["endpoint"] || "https://sub.xeton.dev/sub",
+		"https://api.wcc.best/sub",
+	];
 	const configParam =
 		requestParams["config"] || "ACL4SSR_Online_Mini_AdblockPlus.ini";
 	if (configParam.startsWith("ACL4SSR_Online_")) {
@@ -290,30 +297,38 @@ app.get("/", async (c) => {
 	requestParams["target"] = "clash";
 	requestParams["emoji"] = requestParams["emoji"] || "true";
 
-	try {
-		const qs = new URLSearchParams(requestParams).toString();
-		const resp = await fetch(`${endpoint}?${qs}`).then((r) => r.text());
-		const clashConfig = yaml.load(resp) as ClashConfig;
+	const qs = new URLSearchParams(requestParams).toString();
+	let lastError: Error | null = null;
 
-		if (!clashConfig || !clashConfig.rules) {
-			throw Error("Config invalid");
+	for (const endpoint of endpoints) {
+		try {
+			const resp = await fetchAsClashClient(`${endpoint}?${qs}`).then((r) => r.text());
+			const clashConfig = yaml.load(resp) as ClashConfig;
+			if (!clashConfig || !clashConfig.rules) {
+				throw Error(
+					"Clash config invalid, please check your url parameter",
+				);
+			}
+			updateRule(clashConfig, rules);
+			await updateProxy(clashConfig, requestParams);
+			updateProxyGroup(clashConfig);
+
+			// 避免yaml序列化出现ref字段, 使用JSON.parse(JSON.stringify)深拷贝打断此优化
+			const dumpString = yaml.dump(JSON.parse(JSON.stringify(clashConfig)), {
+				indent: 2,
+			});
+
+			return c.text(dumpString, 200, {
+				"Content-Type": "text/plain;charset=utf-8",
+			});
+		} catch (error: any) {
+			lastError = error;
+			// 继续尝试下一个 endpoint
 		}
-		updateRule(clashConfig, rules);
-		await updateProxy(clashConfig, requestParams);
-		updateProxyGroup(clashConfig);
-
-		// 避免yaml序列化出现ref字段, 使用JSON.parse(JSON.stringify)深拷贝打断此优化
-		const dumpString = yaml.dump(JSON.parse(JSON.stringify(clashConfig)), {
-			indent: 2,
-		});
-
-		return c.text(dumpString, 200, {
-			"Content-Type": "text/plain;charset=utf-8",
-		});
-	} catch (error: any) {
-		return c.text(`Internal Server Error: ${error.message}`, 500, {
-			"Content-Type": "text/plain;charset=utf-8",
-		});
 	}
+
+	return c.text(`Internal Server Error: ${lastError?.message}`, 500, {
+		"Content-Type": "text/plain;charset=utf-8",
+	});
 });
 export default app;
