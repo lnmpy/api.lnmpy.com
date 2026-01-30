@@ -43,7 +43,9 @@ async function updateProxy(
 }
 
 async function loadClashProxies(url: string) {
-	return fetch(url, {
+	const urlObj = new URL(url);
+	urlObj.searchParams.set("flag", "clash");
+	return fetch(urlObj.toString(), {
 		headers: {
 			"User-Agent": "ClashMeta/1.8.0",
 		},
