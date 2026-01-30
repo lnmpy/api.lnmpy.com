@@ -4,7 +4,6 @@ import { ClashConfig, ClashProxy } from "./types";
 
 function fetchAsClashClient(url: string): Promise<Response> {
 	const urlObj = new URL(url);
-	urlObj.searchParams.set("flag", "clash");
 	return fetch(urlObj.toString(), {
 		headers: {
 			"User-Agent": "ClashMeta/1.8.0",
@@ -12,98 +11,48 @@ function fetchAsClashClient(url: string): Promise<Response> {
 	});
 }
 
-async function updateProxy(
-	config: ClashConfig,
-	requestParams: Record<string, string>,
-) {
-	if (requestParams["proxy_full"] === "true") {
-		const url = requestParams["url"];
-		config.proxies = [];
-		for (const u of url.split("|")) {
-			const proxies = await loadClashProxies(u);
-			config.proxies.push(...proxies);
-		}
-		if (!!requestParams["exclude"]) {
-			const exclude = requestParams["exclude"].split(",");
-			config.proxies = config.proxies.filter(
-				(n) => !exclude.some((e) => n.name.includes(e)),
-			);
-		}
-		if (requestParams["emoji"] === "true") {
-			addProxyEmoji(config.proxies);
-		}
-	}
-
-	const multiMin = parseFloat(requestParams["proxy_cost_min"]);
-	const multiMax = parseFloat(requestParams["proxy_cost_max"]);
-	if (!config.proxies) {
-		return;
-	}
-	config.proxies = config.proxies.filter((n) => {
-		const filterReg = /(\d+(?:\.\d+)?)\s*x/g; // 匹配基于 1.7x  0.9x  3x 这样的倍率定义
-		for (const match of n.name.matchAll(filterReg)) {
-			const numberStr = match[1];
-			const number = parseFloat(numberStr);
-			if (number < multiMin || number > multiMax) {
-				return false;
-			}
-		}
-		return true;
-	});
-}
-
-async function loadClashProxies(url: string) {
+async function loadClashProxies(url: string): Promise<ClashProxy[]> {
 	return fetchAsClashClient(url)
 		.then((res) => res.text())
 		.then((resp) => yaml.load(resp) as ClashConfig)
-		.then((c) => c.proxies);
+		.then((c) => c.proxies || []);
 }
 
 function addProxyEmoji(proxies: ClashProxy[]) {
+	const emojiMap: Record<string, string> = {
+		"香港": "🇭🇰",
+		"新加坡": "🇸🇬",
+		"美国": "🇺🇸",
+		"日本": "🇯🇵",
+		"韩国": "🇰🇷",
+		"德国": "🇩🇪",
+		"英国": "🇬🇧",
+		"荷兰": "🇳🇱",
+		"意大利": "🇮🇹",
+		"法国": "🇫🇷",
+		"加拿大": "🇨🇦",
+		"澳大利亚": "🇦🇺",
+		"新西兰": "🇳🇿",
+		"土耳其": "🇹🇷",
+		"台湾": "🇹🇼",
+		"印度": "🇮🇳",
+		"罗马尼亚": "🇷🇴",
+		"俄罗斯": "🇷🇺",
+		"西班牙": "🇪🇸",
+		"希腊": "🇬🇷",
+	};
+
 	for (const proxy of proxies) {
 		let emoji = "";
-		if (proxy.name.includes("香港")) {
-			emoji = "🇭🇰";
-		} else if (proxy.name.includes("新加坡")) {
-			emoji = "🇸🇬";
-		} else if (proxy.name.includes("美国")) {
-			emoji = "🇺🇸";
-		} else if (proxy.name.includes("日本")) {
-			emoji = "🇯🇵";
-		} else if (proxy.name.includes("韩国")) {
-			emoji = "🇰🇷";
-		} else if (proxy.name.includes("德国")) {
-			emoji = "🇩🇪";
-		} else if (proxy.name.includes("英国")) {
-			emoji = "🇬🇧";
-		} else if (proxy.name.includes("荷兰")) {
-			emoji = "🇳🇱";
-		} else if (proxy.name.includes("意大利")) {
-			emoji = "🇮🇹";
-		} else if (proxy.name.includes("法国")) {
-			emoji = "🇫🇷";
-		} else if (proxy.name.includes("加拿大")) {
-			emoji = "🇨🇦";
-		} else if (proxy.name.includes("澳大利亚")) {
-			emoji = "🇦🇺";
-		} else if (proxy.name.includes("新西兰")) {
-			emoji = "🇳🇿";
-		} else if (proxy.name.includes("土耳其")) {
-			emoji = "🇹🇷";
-		} else if (proxy.name.includes("台湾")) {
-			emoji = "🇹🇼";
-		} else if (proxy.name.includes("印度")) {
-			emoji = "🇮🇳";
-		} else if (proxy.name.includes("罗马尼亚")) {
-			emoji = "🇷🇴";
-		} else if (proxy.name.includes("俄罗斯")) {
-			emoji = "🇷🇺";
-		} else if (proxy.name.includes("西班牙")) {
-			emoji = "🇪🇸";
-		} else if (proxy.name.includes("希腊")) {
-			emoji = "🇬🇷";
+		for (const [keyword, flag] of Object.entries(emojiMap)) {
+			if (proxy.name.includes(keyword)) {
+				emoji = flag;
+				break;
+			}
 		}
-		proxy.name = emoji + " " + proxy.name;
+		if (emoji) {
+			proxy.name = emoji + " " + proxy.name;
+		}
 	}
 }
 
@@ -209,14 +158,13 @@ function updateProxyGroup(config: ClashConfig) {
 		}));
 }
 
-function updateRule(config: ClashConfig, rules: string[]) {
+function updateRules(config: ClashConfig, rules: string[]) {
+	// 在模板 rules 前面添加自定义规则
 	config.rules.unshift(...rules);
 
-	// 遍历所有的rule将其中的全球拦截等规则替换, 减少proxy-groups的数量
-	config.rules = config.rules.map((r) => r.replace("🛑 全球拦截", "REJECT"));
-	config.rules = config.rules.map((r) => r.replace("🎯 全球直连", "DIRECT"));
+	// 替换规则中的代理组名称
 	config.rules = config.rules.map((r) =>
-		r.replace("🐟 漏网之鱼", "🚀 节点选择"),
+		r.replace("PROXY", "🚀 节点选择"),
 	);
 }
 
@@ -258,6 +206,21 @@ async function loadR2Rules(
 	return result;
 }
 
+async function loadR2Template(
+	c: Context,
+	requestParams: Record<string, string>,
+): Promise<string> {
+	const template = requestParams["template"] || "loyalsoldier";
+	delete requestParams["template"];
+	const templateObject = await c.env.r2_storgae.get(
+		`clash_converter_template/${template}.yaml`,
+	);
+	if (!templateObject) {
+		throw new Error(`Template '${template}' not found`);
+	}
+	return templateObject.text();
+}
+
 type Bindings = {
 	r2_storgae: R2Bucket;
 };
@@ -272,7 +235,7 @@ app.get("/", async (c) => {
 		});
 	}
 
-	const rules = await loadR2Rules(c, requestParams);
+	const customRules = await loadR2Rules(c, requestParams);
 
 	if (!requestParams["url"]) {
 		return c.text("url parameter missing", 404, {
@@ -280,55 +243,74 @@ app.get("/", async (c) => {
 		});
 	}
 
-	// 默认参数
-	// 转换服务 参考 https://acl4ssr-sub.github.io
-	const endpoints = [
-		requestParams["endpoint"] || "https://sub.xeton.dev/sub",
-		"https://api.wcc.best/sub",
-	];
-	const configParam =
-		requestParams["config"] || "ACL4SSR_Online_Mini_AdblockPlus.ini";
-	if (configParam.startsWith("ACL4SSR_Online_")) {
-		requestParams["config"] =
-			`https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/${configParam}`;
-	}
-	requestParams["proxy_cost_min"] = requestParams["proxy_cost_min"] || "0";
-	requestParams["proxy_cost_max"] = requestParams["proxy_cost_max"] || "2";
-	requestParams["target"] = "clash";
-	requestParams["emoji"] = requestParams["emoji"] || "true";
+	// 解析参数
+	const urls = requestParams["url"].split("|");
+	const exclude = (requestParams["exclude"] || "").split(",").filter(Boolean);
+	const emoji = requestParams["emoji"] !== "false";
+	const proxyCostMin = parseFloat(requestParams["proxy_cost_min"] || "0");
+	const proxyCostMax = parseFloat(requestParams["proxy_cost_max"] || "2");
 
-	const qs = new URLSearchParams(requestParams).toString();
-	let lastError: Error | null = null;
+	try {
+		// 加载模板
+		const clashTemplate = await loadR2Template(c, requestParams);
+		const clashConfig = yaml.load(clashTemplate) as ClashConfig;
 
-	for (const endpoint of endpoints) {
-		try {
-			const resp = await fetchAsClashClient(`${endpoint}?${qs}`).then((r) => r.text());
-			const clashConfig = yaml.load(resp) as ClashConfig;
-			if (!clashConfig || !clashConfig.rules) {
-				throw Error(
-					"Clash config invalid, please check your url parameter",
-				);
+		// 从所有 URL 加载 proxies
+		let allProxies: ClashProxy[] = [];
+		for (const url of urls) {
+			try {
+				const proxies = await loadClashProxies(url.trim());
+				allProxies.push(...proxies);
+			} catch (e) {
+				console.error(`Failed to load proxies from ${url}:`, e);
 			}
-			updateRule(clashConfig, rules);
-			await updateProxy(clashConfig, requestParams);
-			updateProxyGroup(clashConfig);
-
-			// 避免yaml序列化出现ref字段, 使用JSON.parse(JSON.stringify)深拷贝打断此优化
-			const dumpString = yaml.dump(JSON.parse(JSON.stringify(clashConfig)), {
-				indent: 2,
-			});
-
-			return c.text(dumpString, 200, {
-				"Content-Type": "text/plain;charset=utf-8",
-			});
-		} catch (error: any) {
-			lastError = error;
-			// 继续尝试下一个 endpoint
 		}
-	}
 
-	return c.text(`Internal Server Error: ${lastError?.message}`, 500, {
-		"Content-Type": "text/plain;charset=utf-8",
-	});
+		if (allProxies.length === 0) {
+			throw new Error("No proxies loaded from any URL");
+		}
+
+		// 过滤排除的节点
+		if (exclude.length > 0) {
+			allProxies = allProxies.filter(
+				(p) => !exclude.some((e) => p.name.includes(e)),
+			);
+		}
+
+		// 按倍率过滤节点
+		allProxies = allProxies.filter((p) => {
+			const filterReg = /(\d+(?:\.\d+)?)\s*x/g;
+			for (const match of p.name.matchAll(filterReg)) {
+				const number = parseFloat(match[1]);
+				if (number < proxyCostMin || number > proxyCostMax) {
+					return false;
+				}
+			}
+			return true;
+		});
+
+		// 添加 emoji
+		if (emoji) {
+			addProxyEmoji(allProxies);
+		}
+
+		// 填充到配置
+		clashConfig.proxies = allProxies;
+		updateRules(clashConfig, customRules);
+		updateProxyGroup(clashConfig);
+
+		// 序列化输出
+		const dumpString = yaml.dump(JSON.parse(JSON.stringify(clashConfig)), {
+			indent: 2,
+		});
+
+		return c.text(dumpString, 200, {
+			"Content-Type": "text/plain;charset=utf-8",
+		});
+	} catch (error: any) {
+		return c.text(`Internal Server Error: ${error.message}`, 500, {
+			"Content-Type": "text/plain;charset=utf-8",
+		});
+	}
 });
 export default app;
