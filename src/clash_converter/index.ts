@@ -246,7 +246,6 @@ app.get("/", async (c) => {
 	// 解析参数
 	const urls = requestParams["url"].split("|");
 	const exclude = (requestParams["exclude"] || "").split(",").filter(Boolean);
-	const emoji = requestParams["emoji"] !== "false";
 	const proxyCostMin = parseFloat(requestParams["proxy_cost_min"] || "0");
 	const proxyCostMax = parseFloat(requestParams["proxy_cost_max"] || "2");
 
@@ -290,9 +289,7 @@ app.get("/", async (c) => {
 		});
 
 		// 添加 emoji
-		if (emoji) {
-			addProxyEmoji(allProxies);
-		}
+		addProxyEmoji(allProxies);
 
 		// 填充到配置
 		clashConfig.proxies = allProxies;
