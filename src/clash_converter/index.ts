@@ -256,9 +256,11 @@ app.get("/", async (c) => {
 
 		// 从所有 URL 加载 proxies
 		let allProxies: ClashProxy[] = [];
-		for (const url of urls) {
+		for (let i = 0; i < urls.length; i++) {
+			const url = urls[i];
 			try {
 				const proxies = await loadClashProxies(url.trim());
+				proxies.forEach((p) => (p.providerNumber = i));
 				allProxies.push(...proxies);
 			} catch (e) {
 				console.error(`Failed to load proxies from ${url}:`, e);

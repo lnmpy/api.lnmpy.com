@@ -7,6 +7,7 @@ export interface ClashConfig {
 
 export interface ClashProxy {
 	name: string;
+	providerNumber: number;
 }
 
 export interface ClashProxyGroup {
