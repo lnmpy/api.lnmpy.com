@@ -210,7 +210,7 @@ async function loadR2Template(
 	c: Context,
 	requestParams: Record<string, string>,
 ): Promise<string> {
-	const template = requestParams["template"] || "loyalsoldier";
+	const template = requestParams["template"] || "base";
 	delete requestParams["template"];
 	const templateObject = await c.env.r2_storgae.get(
 		`clash_converter_template/${template}.yaml`,
