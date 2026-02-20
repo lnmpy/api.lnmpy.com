@@ -14,7 +14,7 @@
 		"wrangler": "^4.59.1"
 	},
 	"dependencies": {
-		"hono": "^4.11.7",
+		"hono": "^4.11.10",
 		"js-yaml": "^4.1.1"
 	}
 }
