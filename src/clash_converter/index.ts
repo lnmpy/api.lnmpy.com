@@ -50,13 +50,16 @@ function addProxyEmoji(proxies: ClashProxy[]) {
 				break;
 			}
 		}
-		if (emoji) {
+		if (emoji && !proxy.name.startsWith(emoji)) {
 			proxy.name = emoji + " " + proxy.name;
 		}
 	}
 }
 
-function updateProxyGroup(config: ClashConfig) {
+function updateProxyGroup(
+	config: ClashConfig,
+	groupExcludes: Record<string, string[]> = {},
+) {
 	const proxies = config.proxies.map((p) => p.name);
 
 	config["proxy-groups"] = [
@@ -143,6 +146,19 @@ function updateProxyGroup(config: ClashConfig) {
 			),
 		},
 	];
+
+	// 处理 group_excludes
+	Object.entries(groupExcludes).forEach(([groupName, excludes]) => {
+		if (!groupName) return;
+		config["proxy-groups"]?.forEach((group) => {
+			if (group.name.includes(groupName) && group.proxies) {
+				group.proxies = group.proxies.filter(
+					(proxyName) => !excludes.some((exclude) => proxyName.includes(exclude)),
+				);
+			}
+		});
+	});
+
 	// 移除empty proxy-groups
 	const emptyProxyGroups = config["proxy-groups"]
 		.filter((group) => group.proxies?.length == 0)
@@ -249,6 +265,16 @@ app.get("/", async (c) => {
 	const proxyCostMin = parseFloat(requestParams["proxy_cost_min"] || "0");
 	const proxyCostMax = parseFloat(requestParams["proxy_cost_max"] || "2");
 
+	const groupExcludes: Record<string, string[]> = {};
+	for (const [key, value] of Object.entries(requestParams)) {
+		if (key.startsWith("group_exclude:")) {
+			const groupName = key.slice("group_exclude:".length);
+			if (groupName) {
+				groupExcludes[groupName] = value.split(",").filter(Boolean);
+			}
+		}
+	}
+
 	try {
 		// 加载模板
 		const clashTemplate = await loadR2Template(c, requestParams);
@@ -260,7 +286,7 @@ app.get("/", async (c) => {
 			const url = urls[i];
 			try {
 				const proxies = await loadClashProxies(url.trim());
-				proxies.forEach((p) => (p.providerNumber = i));
+				proxies.forEach((p) => { p.providerNumber = i; p.name += `@URL${i}` });
 				allProxies.push(...proxies);
 			} catch (e) {
 				console.error(`Failed to load proxies from ${url}:`, e);
@@ -296,7 +322,7 @@ app.get("/", async (c) => {
 		// 填充到配置
 		clashConfig.proxies = allProxies;
 		updateRules(clashConfig, customRules);
-		updateProxyGroup(clashConfig);
+		updateProxyGroup(clashConfig, groupExcludes);
 
 		// 序列化输出
 		const dumpString = yaml.dump(JSON.parse(JSON.stringify(clashConfig)), {
