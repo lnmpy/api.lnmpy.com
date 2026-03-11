@@ -286,7 +286,9 @@ app.get("/", async (c) => {
 			const url = urls[i];
 			try {
 				const proxies = await loadClashProxies(url.trim());
-				proxies.forEach((p) => { p.providerNumber = i; p.name += `@URL${i}` });
+				proxies.forEach((p) => {
+					p.name = p.name.trim() + `@URL${i}`
+				});
 				allProxies.push(...proxies);
 			} catch (e) {
 				console.error(`Failed to load proxies from ${url}:`, e);
