@@ -85,7 +85,12 @@ function updateProxyGroup(
 			url: "http://www.gstatic.com/generate_204",
 			interval: 600,
 			tolerance: 120,
-			proxies: proxies,
+			proxies: [
+				"🇭🇰 香港节点",
+				"🇸🇬 狮城节点",
+				"🇺🇸 美国节点",
+				"🇯🇵 日本节点",
+			],
 		},
 		{
 			// trojan等较重协议优先使用该模式
@@ -96,7 +101,12 @@ function updateProxyGroup(
 			url: "http://www.gstatic.com/generate_204",
 			interval: 600,
 			tolerance: 120,
-			proxies: proxies,
+			proxies: [
+				"🇭🇰 香港节点",
+				"🇸🇬 狮城节点",
+				"🇺🇸 美国节点",
+				"🇯🇵 日本节点",
+			],
 		},
 		{
 			name: "🚀 手动切换",
