@@ -11,11 +11,51 @@ function fetchAsClashClient(url: string): Promise<Response> {
 	});
 }
 
-async function loadClashProxies(url: string): Promise<ClashProxy[]> {
-	return fetchAsClashClient(url)
-		.then((res) => res.text())
-		.then((resp) => yaml.load(resp) as ClashConfig)
-		.then((c) => c.proxies || []);
+async function sha256(message: string) {
+	const msgBuffer = new TextEncoder().encode(message);
+	const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+	const hashArray = Array.from(new Uint8Array(hashBuffer));
+	const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+	return hashHex;
+}
+
+async function loadClashProxies(
+	url: string,
+	storage?: R2Bucket,
+	useCache: boolean = false,
+): Promise<ClashProxy[]> {
+	const urlTrimmed = url.trim();
+	let respText = "";
+
+	if (useCache && storage) {
+		const cacheKey = `clash_converter_cache/${await sha256(urlTrimmed)}`;
+		try {
+			const res = await fetchAsClashClient(urlTrimmed);
+			if (res.ok) {
+				respText = await res.text();
+				await storage.put(cacheKey, respText);
+			} else {
+				throw new Error(`Fetch failed with status ${res.status}`);
+			}
+		} catch (e) {
+			console.error(`Failed to fetch ${urlTrimmed}, trying cache:`, e);
+			const cacheObject = await storage.get(cacheKey);
+			if (cacheObject) {
+				respText = await cacheObject.text();
+			} else {
+				throw e;
+			}
+		}
+	} else {
+		const res = await fetchAsClashClient(urlTrimmed);
+		if (!res.ok) {
+			throw new Error(`Fetch failed with status ${res.status}`);
+		}
+		respText = await res.text();
+	}
+
+	const config = yaml.load(respText) as ClashConfig;
+	return config.proxies || [];
 }
 
 function addProxyEmoji(proxies: ClashProxy[]) {
@@ -253,7 +293,9 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>();
 app.get("/", async (c) => {
-	const requestParams = c.req.query();
+	const requestParams = { ...c.req.query() };
+	const useCache = requestParams["cache"] === "1";
+	delete requestParams["cache"];
 	const profile = await loadR2Profile(c, requestParams);
 	if (!!profile) {
 		return c.text(profile, 200, {
@@ -295,7 +337,11 @@ app.get("/", async (c) => {
 		for (let i = 0; i < urls.length; i++) {
 			const url = urls[i];
 			try {
-				const proxies = await loadClashProxies(url.trim());
+				const proxies = await loadClashProxies(
+					url,
+					c.env.r2_storgae,
+					useCache,
+				);
 				proxies.forEach((p) => {
 					p.name = p.name.trim() + `@URL${i}`
 				});
