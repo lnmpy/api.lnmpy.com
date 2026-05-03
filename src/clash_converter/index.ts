@@ -315,7 +315,7 @@ app.get("/", async (c) => {
 	const urls = requestParams["url"].split("|");
 	const exclude = (requestParams["exclude"] || "").split(",").filter(Boolean);
 	const proxyCostMin = parseFloat(requestParams["proxy_cost_min"] || "0");
-	const proxyCostMax = parseFloat(requestParams["proxy_cost_max"] || "2");
+	const proxyCostMax = parseFloat(requestParams["proxy_cost_max"] || "1");
 
 	const groupExcludes: Record<string, string[]> = {};
 	for (const [key, value] of Object.entries(requestParams)) {
