@@ -58,6 +58,9 @@ async function loadClashProxies(
 
 export async function buildProxy(config: ClashConfig, requestParams: Record<string, any>, r2_storgae: R2Bucket) {
     const urls = requestParams["url"].split("|");
+    const urlNames = requestParams["url_names"]
+        ? requestParams["url_names"].split("|").map((s: string) => s.trim())
+        : [];
     // 从所有 URL 加载 proxies
 
     let proxies: ClashProxy[] = [];
@@ -70,7 +73,12 @@ export async function buildProxy(config: ClashConfig, requestParams: Record<stri
                 requestParams["cache"] === "1"
             );
             ps.forEach((p) => {
-                p.name = p.name.trim() + `@URL${i}`;
+                const suffix = urlNames[i];
+                if (suffix) {
+                    p.name = `${p.name.trim()}@${suffix}`;
+                } else {
+                    p.name = p.name.trim();
+                }
             });
             proxies.push(...ps);
         } catch (e) {
