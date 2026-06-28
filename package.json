@@ -15,6 +15,6 @@
 	},
 	"dependencies": {
 		"hono": "^4.12.18",
-		"js-yaml": "^4.1.1"
+		"js-yaml": "^4.2.0"
 	}
 }
