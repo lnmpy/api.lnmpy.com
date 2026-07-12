@@ -63,7 +63,7 @@ export function buildProxyGroup(
 			url: "http://www.gstatic.com/generate_204",
 			interval: 600,
 			tolerance: 120,
-			proxies: proxies.filter((n) => n.includes("香港")),
+			proxies: proxies.filter((n) => n.includes("🇭🇰")),
 		},
 		{
 			name: "🇸🇬 狮城节点",
@@ -71,7 +71,7 @@ export function buildProxyGroup(
 			url: "http://www.gstatic.com/generate_204",
 			interval: 600,
 			tolerance: 120,
-			proxies: proxies.filter((n) => n.includes("新加坡")),
+			proxies: proxies.filter((n) => n.includes("🇸🇬")),
 		},
 		{
 			name: "🇺🇸 美国节点",
@@ -79,7 +79,7 @@ export function buildProxyGroup(
 			url: "http://www.gstatic.com/generate_204",
 			interval: 600,
 			tolerance: 120,
-			proxies: proxies.filter((n) => n.includes("美国")),
+			proxies: proxies.filter((n) => n.includes("🇺🇸")),
 		},
 		{
 			name: "🇯🇵 日本节点",
@@ -87,7 +87,7 @@ export function buildProxyGroup(
 			url: "http://www.gstatic.com/generate_204",
 			interval: 600,
 			tolerance: 120,
-			proxies: proxies.filter((n) => n.includes("日本")),
+			proxies: proxies.filter((n) => n.includes("🇯🇵")),
 		},
 		{
 			name: "🇪🇺 欧洲节点",
@@ -96,7 +96,7 @@ export function buildProxyGroup(
 			interval: 600,
 			tolerance: 120,
 			proxies: proxies.filter((n) =>
-				["德国", "英国", "荷兰", "意大利", "法国"].some((c) => n.includes(c)),
+				["🇩🇪", "🇬🇧", "🇳🇱", "🇮🇹", "🇫🇷"].some((c) => n.includes(c)),
 			),
 		},
 	];

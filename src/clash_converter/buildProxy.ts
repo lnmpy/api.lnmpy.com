@@ -112,38 +112,49 @@ export async function buildProxy(config: ClashConfig, requestParams: Record<stri
 
     {
         const emojiMap: Record<string, string> = {
-            "香港": "🇭🇰",
-            "新加坡": "🇸🇬",
-            "美国": "🇺🇸",
-            "日本": "🇯🇵",
-            "韩国": "🇰🇷",
-            "德国": "🇩🇪",
-            "英国": "🇬🇧",
-            "荷兰": "🇳🇱",
-            "意大利": "🇮🇹",
-            "法国": "🇫🇷",
-            "加拿大": "🇨🇦",
-            "澳大利亚": "🇦🇺",
-            "新西兰": "🇳🇿",
-            "土耳其": "🇹🇷",
-            "台湾": "🇹🇼",
-            "印度": "🇮🇳",
-            "罗马尼亚": "🇷🇴",
-            "俄罗斯": "🇷🇺",
-            "西班牙": "🇪🇸",
-            "希腊": "🇬🇷",
+            "香港|Hong Kong|HK|🇭🇰": "🇭🇰",
+            "新加坡|Singapore|SG|🇸🇬": "🇸🇬",
+            "美国|USA|US|🇺🇸": "🇺🇸",
+            "日本|Japan|JP|🇯🇵": "🇯🇵",
+            "韩国|South Korea|KR|🇰🇷": "🇰🇷",
+            "德国|Germany|DE|🇩🇪": "🇩🇪",
+            "英国|United Kingdom|UK|🇬🇧": "🇬🇧",
+            "荷兰|Netherlands|NL|🇳🇱": "🇳🇱",
+            "意大利|Italy|IT|🇮🇹": "🇮🇹",
+            "法国|France|FR|🇫🇷": "🇫🇷",
+            "加拿大|Canada|CA|🇨🇦": "🇨🇦",
+            "澳大利亚|Australia|AU|🇦🇺": "🇦🇺",
+            "新西兰|New Zealand|NZ|🇳🇿": "🇳🇿",
+            "土耳其|Turkey|TR|🇹🇷": "🇹🇷",
+            "台湾|Taiwan|TW|🇹🇼": "🇹🇼",
+            "印度|India|IN|🇮🇳": "🇮🇳",
+            "罗马尼亚|Romania|RO|🇷🇴": "🇷🇴",
+            "俄罗斯|Russia|RU|🇷🇺": "🇷🇺",
+            "西班牙|Spain|ES|🇪🇸": "🇪🇸",
+            "希腊|Greece|GR|🇬🇷": "🇬🇷",
+            "泰国|Thailand|TH|🇹🇭": "🇹🇭",
+            "马来西亚|Malaysia|MY|🇲🇾": "🇲🇾",
+            "菲律宾|Philippines|PH|🇵🇭": "🇵🇭",
         };
 
         for (const proxy of proxies) {
             let emoji = "";
-            for (const [keyword, flag] of Object.entries(emojiMap)) {
-                if (proxy.name.includes(keyword)) {
-                    emoji = flag;
-                    break;
+            for (const [keywords, flag] of Object.entries(emojiMap)) {
+                for (const keyword of keywords.split("|")) {
+                    if (proxy.name.includes(keyword)) {
+                        emoji = flag;
+                        break;
+                    }
                 }
             }
-            if (emoji && !proxy.name.startsWith(emoji)) {
-                proxy.name = emoji + " " + proxy.name;
+            if (emoji) {
+                if (proxy.name.startsWith(emoji + " ")) {
+                    continue;
+                } else if (proxy.name.startsWith(emoji)) {
+                    proxy.name = proxy.name.replace(emoji, emoji + " ");
+                } else {
+                    proxy.name = emoji + " " + proxy.name;
+                }
             }
         }
     }
