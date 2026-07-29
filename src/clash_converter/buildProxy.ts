@@ -57,15 +57,24 @@ async function loadClashProxies(
 }
 
 export async function buildProxy(config: ClashConfig, requestParams: Record<string, any>, r2_storgae: R2Bucket) {
-    const urls = requestParams["url"].split("|");
-    const urlNames = requestParams["url_names"]
-        ? requestParams["url_names"].split("|").map((s: string) => s.trim())
-        : [];
+    const rawUrls: string[] = requestParams["url"] ? requestParams["url"].split("|") : [];
     // 从所有 URL 加载 proxies
 
     let proxies: ClashProxy[] = [];
-    for (let i = 0; i < urls.length; i++) {
-        const url = urls[i];
+    for (const rawItem of rawUrls) {
+        const trimmedItem = rawItem.trim();
+        if (!trimmedItem) continue;
+
+        let name = "";
+        let url = trimmedItem;
+        const idx = trimmedItem.indexOf("::");
+        if (idx !== -1) {
+            name = trimmedItem.substring(0, idx).trim();
+            url = trimmedItem.substring(idx + 2).trim();
+        }
+
+        if (!url) continue;
+
         try {
             const ps = await loadClashProxies(
                 url,
@@ -73,9 +82,8 @@ export async function buildProxy(config: ClashConfig, requestParams: Record<stri
                 requestParams["cache"] === "1"
             );
             ps.forEach((p) => {
-                const suffix = urlNames[i];
-                if (suffix) {
-                    p.name = `${p.name.trim()}@${suffix}`;
+                if (name) {
+                    p.name = `${p.name.trim()}@${name}`;
                 } else {
                     p.name = p.name.trim();
                 }
@@ -88,7 +96,7 @@ export async function buildProxy(config: ClashConfig, requestParams: Record<stri
 
     {
         const proxyCostMin = parseFloat(requestParams["proxy_cost_min"] || "0");
-        const proxyCostMax = parseFloat(requestParams["proxy_cost_max"] || "1");
+        const proxyCostMax = parseFloat(requestParams["proxy_cost_max"] || "1.5");
         proxies = proxies.filter((p) => {
             const filterReg = /(\d+(?:\.\d+)?)\s*x/g;
             for (const match of p.name.matchAll(filterReg)) {
