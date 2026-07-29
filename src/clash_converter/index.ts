@@ -4,6 +4,7 @@ import { ClashConfig } from "./types";
 import { buildProxyGroup } from "./buildProxyGroup";
 import { buildRule } from "./buildRules";
 import { buildProxy } from "./buildProxy";
+import { loadExtConfig } from "./loadExtConfig";
 
 
 async function loadR2Profile(
@@ -60,7 +61,7 @@ app.get("/", async (c) => {
 	}
 
 	try {
-		const clashConfig = yaml.load(await loadR2Template(requestParams, c.env.r2_storgae)) as ClashConfig;
+		let clashConfig = yaml.load(await loadR2Template(requestParams, c.env.r2_storgae)) as ClashConfig;
 
 		await buildProxy(clashConfig, requestParams, c.env.r2_storgae);
 		if (clashConfig.proxies.length === 0) {
@@ -70,6 +71,7 @@ app.get("/", async (c) => {
 		}
 		await buildRule(clashConfig, requestParams, c.env.r2_storgae);
 		buildProxyGroup(clashConfig, requestParams);
+		clashConfig = await loadExtConfig(clashConfig, requestParams);
 
 		const dumpString = yaml.dump(JSON.parse(JSON.stringify(clashConfig)), {
 			indent: 2,

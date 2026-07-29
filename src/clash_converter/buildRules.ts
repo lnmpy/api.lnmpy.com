@@ -7,7 +7,6 @@ async function loadR2Rules(
 	r2_storgae: R2Bucket,
 ): Promise<string[]> {
 	const rules = (requestParams["rules"] || "").split("|");
-	delete requestParams["rules"];
 	let result: string[] = [];
 	if (!rules) {
 		return result;
