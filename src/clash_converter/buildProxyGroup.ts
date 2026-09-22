@@ -99,6 +99,19 @@ export function buildProxyGroup(
 				["🇩🇪", "🇬🇧", "🇳🇱", "🇮🇹", "🇫🇷"].some((c) => n.includes(c)),
 			),
 		},
+		{
+			name: "GLOBAL",
+			type: "select",
+			proxies: [
+				"♻️ 自动选择",
+				"🔁 故障转移",
+				"🚀 手动切换",
+				"🇭🇰 香港节点",
+				"🇸🇬 狮城节点",
+				"🇺🇸 美国节点",
+				"🇯🇵 日本节点",
+			],
+		},
 	];
 
 	// 移除empty proxy-groups
