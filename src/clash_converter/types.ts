@@ -17,4 +17,5 @@ export interface ClashProxyGroup {
 	url?: string;
 	interval?: number;
 	tolerance?: number;
+	comment?: string;
 }
