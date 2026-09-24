@@ -1,9 +1,9 @@
 import { ClashConfig } from "./types";
 
-export function buildProxyGroup(
+export async function buildProxyGroup(
 	config: ClashConfig,
 	requestParams: Record<string, any>,
-) {
+): Promise<ClashConfig> {
 	const proxies = config.proxies.map((p) => p.name);
 
 	config["proxy-groups"] = [
@@ -32,9 +32,7 @@ export function buildProxyGroup(
 				"🇺🇸 美国节点",
 				"🇯🇵 日本节点",
 			],
-			comment: `ss,vmess,vless等轻量协议优先使用该模式
-			每隔internal秒进行测试, 若存在更优节点, 则切换到更优节点
-			比较原则: 延迟小于 当前节点 + tolerance`,
+			comment: `ss,vmess,vless等轻量协议优先使用该模式. 每隔internal秒进行测试, 若存在更优节点, 则切换到更优节点. 比较原则: 延迟小于 当前节点 + tolerance`,
 		},
 		{
 
@@ -49,9 +47,7 @@ export function buildProxyGroup(
 				"🇺🇸 美国节点",
 				"🇯🇵 日本节点",
 			],
-			comment: `trojan等较重协议优先使用该模式
-			每隔internal秒进行测试, 若当前节点是否可用, 若不可用才切换至下一个节点
-			可用原则: 延迟小于 最低延迟节点 + tolerance`
+			comment: `trojan等较重协议优先使用该模式. 每隔internal秒进行测试, 若当前节点是否可用, 若不可用才切换至下一个节点. 可用原则: 延迟小于 最低延迟节点 + tolerance`
 		},
 		{
 			name: "🚀 手动切换",
@@ -128,4 +124,6 @@ export function buildProxyGroup(
 				(proxy) => !emptyProxyGroups.includes(proxy),
 			),
 		}));
+
+	return config;
 }

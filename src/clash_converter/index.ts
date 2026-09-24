@@ -4,7 +4,7 @@ import { ClashConfig } from "./types";
 import { buildProxyGroup } from "./buildProxyGroup";
 import { buildRule } from "./buildRules";
 import { buildProxy } from "./buildProxy";
-import { loadExtConfig } from "./loadExtConfig";
+import { loadExtConfig as buildWithExtConfig } from "./loadExtConfig";
 
 
 async function loadR2Profile(
@@ -46,32 +46,32 @@ const app = new Hono<{
 	}
 }>();
 app.get("/", async (c) => {
-	const requestParams: Record<string, any> = { ...c.req.query() };
-	const profile = await loadR2Profile(requestParams, c.env.r2_storgae);
-	if (!!profile) {
-		return c.text(profile, 200, {
-			"Content-Type": "text/plain;charset=utf-8",
-		});
-	}
-
-	if (!requestParams["url"]) {
-		return c.text("url parameter missing", 404, {
-			"Content-Type": "text/plain;charset=utf-8",
-		});
-	}
-
 	try {
-		let clashConfig = yaml.load(await loadR2Template(requestParams, c.env.r2_storgae)) as ClashConfig;
+		const requestParams: Record<string, any> = { ...c.req.query() };
+		const profile = await loadR2Profile(requestParams, c.env.r2_storgae);
+		let clashConfig = null;
+		if (!!profile) {
+			clashConfig = yaml.load(profile) as ClashConfig;
+		} else {
+			if (!requestParams["url"]) {
+				return c.text("url parameter missing", 404, {
+					"Content-Type": "text/plain;charset=utf-8",
+				});
+			}
+			clashConfig = yaml.load(await loadR2Template(requestParams, c.env.r2_storgae)) as ClashConfig;
+			clashConfig = await buildProxy(clashConfig, requestParams, c.env.r2_storgae);
 
-		await buildProxy(clashConfig, requestParams, c.env.r2_storgae);
-		if (clashConfig.proxies.length === 0) {
-			return c.text("url no proxies", 400, {
-				"Content-Type": "text/plain;charset=utf-8",
-			});
+			if (clashConfig.proxies.length === 0) {
+				return c.text("url no proxies", 400, {
+					"Content-Type": "text/plain;charset=utf-8",
+				});
+			}
+
+			clashConfig = await buildRule(clashConfig, requestParams, c.env.r2_storgae);
+			clashConfig = await buildProxyGroup(clashConfig, requestParams);
 		}
-		await buildRule(clashConfig, requestParams, c.env.r2_storgae);
-		buildProxyGroup(clashConfig, requestParams);
-		clashConfig = await loadExtConfig(clashConfig, requestParams);
+
+		clashConfig = await buildWithExtConfig(clashConfig, requestParams);
 
 		const dumpString = yaml.dump(JSON.parse(JSON.stringify(clashConfig)), {
 			indent: 2,

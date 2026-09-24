@@ -25,7 +25,7 @@ export async function buildRule(
 	config: ClashConfig,
 	requestParams: Record<string, any>,
 	r2_storgae: R2Bucket,
-) {
+): Promise<ClashConfig> {
 	const customRules = await loadR2Rules(requestParams, r2_storgae);
 	// 在模板 rules 前面添加自定义规则
 	config.rules.unshift(...customRules);
@@ -34,4 +34,6 @@ export async function buildRule(
 	config.rules = config.rules.map((r) =>
 		r.replace("PROXY", "🚀 节点选择"),
 	);
+
+	return config;
 }

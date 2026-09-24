@@ -56,7 +56,10 @@ async function loadClashProxies(
     return config.proxies || [];
 }
 
-export async function buildProxy(config: ClashConfig, requestParams: Record<string, any>, r2_storgae: R2Bucket) {
+export async function buildProxy(config: ClashConfig,
+    requestParams: Record<string, any>,
+    r2_storgae: R2Bucket,
+): Promise<ClashConfig> {
     const rawUrls: string[] = requestParams["url"] ? requestParams["url"].split("|") : [];
     // 从所有 URL 加载 proxies
 
@@ -167,4 +170,6 @@ export async function buildProxy(config: ClashConfig, requestParams: Record<stri
         }
     }
     config.proxies = proxies;
+
+    return config;
 }
