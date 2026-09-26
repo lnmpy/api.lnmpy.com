@@ -5,6 +5,7 @@ import { buildProxyGroup } from "./buildProxyGroup";
 import { buildRule } from "./buildRules";
 import { buildProxy } from "./buildProxy";
 import { loadExtConfig as buildWithExtConfig } from "./loadExtConfig";
+import { handleGetRuleset } from "./getRuleset";
 
 
 async function loadR2Profile(
@@ -86,4 +87,29 @@ app.get("/", async (c) => {
 		});
 	}
 });
+
+app.get("/getruleset", async (c) => {
+	try {
+		const url = c.req.query("url");
+		const type = c.req.query("type");
+
+		if (!url) {
+			return c.text("url parameter missing", 400, {
+				"Content-Type": "text/plain;charset=utf-8",
+			});
+		}
+
+		const yamlResult = await handleGetRuleset(url, type);
+
+		return c.text(yamlResult, 200, {
+			"Content-Type": "text/plain;charset=utf-8",
+			"Cache-Control": "public, max-age=86400",
+		});
+	} catch (error: any) {
+		return c.text(`GetRuleset Error: ${error.message}`, 500, {
+			"Content-Type": "text/plain;charset=utf-8",
+		});
+	}
+});
+
 export default app;
