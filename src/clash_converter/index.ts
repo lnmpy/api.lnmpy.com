@@ -3,7 +3,7 @@ import yaml from "js-yaml";
 import { ClashConfig } from "./types";
 import { buildProxyGroup } from "./buildProxyGroup";
 import { buildRule } from "./buildRules";
-import { buildProxy } from "./buildProxy";
+import { buildProxy, mergeUserinfo } from "./buildProxy";
 import { loadExtConfig as buildWithExtConfig } from "./loadExtConfig";
 import { handleGetRuleset } from "./getRuleset";
 
@@ -73,6 +73,11 @@ app.get("/", async (c) => {
 		}
 
 		clashConfig = await buildWithExtConfig(clashConfig, requestParams);
+
+		const userinfo = mergeUserinfo([clashConfig["subscription-userinfo"] || ""]);
+		if (userinfo) {
+			c.header("subscription-userinfo", userinfo);
+		}
 
 		const dumpString = yaml.dump(JSON.parse(JSON.stringify(clashConfig)), {
 			indent: 2,

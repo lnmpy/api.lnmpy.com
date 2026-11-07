@@ -41,6 +41,14 @@
 2. **订阅源命名 / 别名**：在 URL 前加上 `别名::` 格式，该订阅源下的所有节点名称后均会追加 `@别名`。
    - 示例：`url=花云::https://sub1.example.com|vps::https://sub2.example.com`. 方便后续script中识别来源不同的厂商而进行自定义分组. 如chatgpt走节点A,netflix走节点2
 
+#### 剩余流量 (`subscription-userinfo`)
+
+透传订阅源响应头中的 `subscription-userinfo`, 以便 Clash Party 等客户端展示流量与到期时间。该字段没有正式规范, 会做宽松解析并规范化: 每个订阅 `total = max(upload + download, total)`, 多个订阅源时 upload/download/total 求和, expire 取最早的一个 (毫秒时间戳自动转为秒)。
+
+- 开启 `cache=1` 时, 该值随订阅内容一起写入缓存 (顶层 key `subscription-userinfo`), 命中缓存时同样返回。
+- 使用 `profile` 时, 若预设 YAML 中包含顶层 key `subscription-userinfo`, 会写回响应头。
+- 该 key 会在 `script` 执行后从输出 YAML 中移除, 因此脚本里也可以读取或修改它。
+
 #### `script` 动态扩展脚本规范
 
 通过 `script` 参数传入外部 JS 脚本 URL 时，脚本将在 QuickJS WASM 安全沙箱中运行（最大超时限制 2000ms）。脚本中必须定义 `main(config)` 函数并返回修改后的配置对象。

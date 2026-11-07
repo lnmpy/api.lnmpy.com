@@ -3,6 +3,7 @@ export interface ClashConfig {
 	"proxy-groups"?: ClashProxyGroup[];
 	rules: string[];
 	dns: any;
+	"subscription-userinfo"?: string;
 }
 
 export interface ClashProxy {

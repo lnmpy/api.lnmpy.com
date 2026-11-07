@@ -17,42 +17,78 @@ async function sha256(message: string) {
     return hashHex;
 }
 
+// subscription-userinfo 没有正式规范, 常见格式为 "upload=1; download=2; total=3; expire=1700000000".
+// 宽松解析: 分隔符 ; , & 换行, 键值 = 或 :, 忽略大小写/引号/空白, 支持 KB/MB/GB/TB 单位.
+function parseUserinfo(info: string): Record<string, number> {
+    const units: Record<string, number> = { "": 1, k: 1024, m: 1024 ** 2, g: 1024 ** 3, t: 1024 ** 4, p: 1024 ** 5 };
+    const result: Record<string, number> = {};
+    for (const part of String(info).split(/[;,&\n]/)) {
+        const idx = part.search(/[=:]/);
+        if (idx === -1) continue;
+        const k = part.slice(0, idx).trim().toLowerCase();
+        const v = part.slice(idx + 1).trim().replace(/^["']|["']$/g, "");
+        const m = v.match(/^(\d+(?:\.\d+)?(?:e[+-]?\d+)?)\s*([kmgtp]?)i?b?$/i);
+        if (!k || !m) continue;
+        result[k] = Math.round(parseFloat(m[1]) * units[m[2].toLowerCase()]);
+    }
+    return result;
+}
+
+// 规范化并合并多个 subscription-userinfo:
+// 每个订阅 total = max(upload + download, total), 再对 upload/download/total 求和, expire 取最早.
+export function mergeUserinfo(infos: string[]): string {
+    let upload = 0, download = 0, total = 0, expire = 0, found = false;
+    for (const info of infos) {
+        const u = parseUserinfo(info);
+        if (u.upload === undefined && u.download === undefined && u.total === undefined) continue;
+        found = true;
+        const up = u.upload || 0;
+        const down = u.download || 0;
+        upload += up;
+        download += down;
+        total += Math.max(up + down, u.total || 0);
+        let exp = u.expire || 0;
+        if (exp > 1e11) exp = Math.floor(exp / 1000); // 毫秒时间戳
+        if (exp > 0) expire = expire ? Math.min(expire, exp) : exp;
+    }
+    if (!found) return "";
+    return `upload=${upload}; download=${download}; total=${total}` + (expire ? `; expire=${expire}` : "");
+}
+
 async function loadClashProxies(
     url: string,
     storage?: R2Bucket,
     useCache: boolean = false,
+    userinfos: string[] = [],
 ): Promise<ClashProxy[]> {
     const urlTrimmed = url.trim();
-    let respText = "";
+    const cache = useCache ? storage : undefined;
+    const cacheKey = cache ? `clash_converter_cache/${await sha256(urlTrimmed)}` : "";
+    let config: ClashConfig;
 
-    if (useCache && storage) {
-        const cacheKey = `clash_converter_cache/${await sha256(urlTrimmed)}`;
-        try {
-            const res = await fetchAsClashClient(urlTrimmed);
-            if (res.ok) {
-                respText = await res.text();
-                await storage.put(cacheKey, respText);
-            } else {
-                throw new Error(`Fetch failed with status ${res.status}`);
-            }
-        } catch (e) {
-            console.error(`Failed to fetch ${urlTrimmed}, trying cache:`, e);
-            const cacheObject = await storage.get(cacheKey);
-            if (cacheObject) {
-                respText = await cacheObject.text();
-            } else {
-                throw e;
-            }
-        }
-    } else {
+    try {
         const res = await fetchAsClashClient(urlTrimmed);
         if (!res.ok) {
             throw new Error(`Fetch failed with status ${res.status}`);
         }
-        respText = await res.text();
+        config = yaml.load(await res.text()) as ClashConfig;
+        const userinfo = res.headers.get("subscription-userinfo");
+        if (userinfo) {
+            config["subscription-userinfo"] = userinfo;
+        }
+        await cache?.put(cacheKey, yaml.dump(config));
+    } catch (e) {
+        const cacheObject = await cache?.get(cacheKey);
+        if (!cacheObject) {
+            throw e;
+        }
+        console.error(`Failed to fetch ${urlTrimmed}, using cache:`, e);
+        config = yaml.load(await cacheObject.text()) as ClashConfig;
     }
 
-    const config = yaml.load(respText) as ClashConfig;
+    if (config["subscription-userinfo"]) {
+        userinfos.push(config["subscription-userinfo"]);
+    }
     return config.proxies || [];
 }
 
@@ -64,6 +100,7 @@ export async function buildProxy(config: ClashConfig,
     // 从所有 URL 加载 proxies
 
     let proxies: ClashProxy[] = [];
+    const userinfos: string[] = [];
     for (const rawItem of rawUrls) {
         const trimmedItem = rawItem.trim();
         if (!trimmedItem) continue;
@@ -82,7 +119,8 @@ export async function buildProxy(config: ClashConfig,
             const ps = await loadClashProxies(
                 url,
                 r2_storgae,
-                requestParams["cache"] === "1"
+                requestParams["cache"] === "1",
+                userinfos,
             );
             ps.forEach((p) => {
                 if (name) {
@@ -170,6 +208,9 @@ export async function buildProxy(config: ClashConfig,
         }
     }
     config.proxies = proxies;
+    if (userinfos.length > 0) {
+        config["subscription-userinfo"] = mergeUserinfo(userinfos);
+    }
 
     return config;
 }
